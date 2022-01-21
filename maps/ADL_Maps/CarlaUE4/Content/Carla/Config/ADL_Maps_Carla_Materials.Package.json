@@ -1,0 +1,20 @@
+{
+    "props": [],
+    "maps": [
+        {
+            "name": "t_junction",
+            "path": "/Game/ADL_Maps_Carla_Materials/Maps/t_junction",
+            "use_carla_materials": true
+        },
+        {
+            "name": "circle_t_junctions",
+            "path": "/Game/ADL_Maps_Carla_Materials/Maps/circle_t_junctions",
+            "use_carla_materials": true
+        },
+        {
+            "name": "default_t_junction",
+            "path": "/Game/ADL_Maps_Carla_Materials/Maps/default_t_junction",
+            "use_carla_materials": true
+        }
+    ]
+}
