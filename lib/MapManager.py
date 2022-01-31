@@ -3,6 +3,7 @@ from re import X
 from turtle import distance
 import carla
 import math
+from typing import List
 from enum import Enum
 from .ClientUser import ClientUser
 
@@ -19,7 +20,7 @@ class MapManager(ClientUser):
         self._waypoints = None
 
     @property
-    def spawn_points(self):
+    def spawn_points(self) -> List[carla.Transform]:
         return self.map.get_spawn_points()
 
     @property
@@ -27,6 +28,15 @@ class MapManager(ClientUser):
         if self._waypoints is None:
             raise Error("waypoint accessed before loading a map")
         return self._waypoints
+
+    def generateNavPoints(self, count=20):
+        nav_points = []
+        for i in range(count):
+            loc = self.world.get_random_location_from_navigation()
+            if (loc != None):
+                point = carla.Transform(location=loc)
+                nav_points.append(point)
+        return nav_points
 
     
     def load(self, mapName: MapNames):

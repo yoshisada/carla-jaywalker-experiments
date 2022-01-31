@@ -4,13 +4,19 @@ import numpy as np
 import random
 import math
 
+from .LoggerFactory import LoggerFactory
 from .ClientUser import ClientUser
 from .MapManager import MapManager
+# import agents.pedestrians.PedState as PedState
 
 class SimulationVisualization(ClientUser):
 
     def __init__(self, client: carla.Client, mapManager: MapManager):
+        self.name = "SimulationVisualization"
         super().__init__(client)
+
+        self.logger = LoggerFactory.create(self.name)
+
         self.mapManager = mapManager
         # self.pool = eventlet.GreenPool()
 
@@ -51,12 +57,12 @@ class SimulationVisualization(ClientUser):
                     carla.Color(*color),
                     life_time)
 
-    def drawTextOnMap(self, location, text, life_time=600):
+    def drawTextOnMap(self, location, text, color=(0, 0, 0), life_time=600):
         self.drawText(
             location=location, 
             text=text, 
             draw_shadow = True,
-            color=(0, 0, 0),
+            color=color,
             life_time=life_time
         )
 
@@ -126,7 +132,7 @@ class SimulationVisualization(ClientUser):
     def drawWalkerNavigationPoints(self, navPoints):
         for point in navPoints:
             location = point.location
-            print(f"walker spawn position ({location.x}, {location.y})")
+            self.logger.debug(f"walker spawn position ({location.x}, {location.y})")
             self.drawPoint(location=location, size=0.05, color=(0, 255, 0))
             self.drawTextOnMap(location=carla.Location(location.x, location.y, 1), text=f"({round(location.x)}, {round(location.y)})")
 
@@ -134,7 +140,7 @@ class SimulationVisualization(ClientUser):
         spawn_points = self.map.get_spawn_points()
         for point in spawn_points:
             location = point.location
-            print(f"spawn_point position ({location.x}, {location.y})")
+            self.logger.debug(f"spawn_point position ({location.x}, {location.y})")
             self.drawPoint(location=location, size=0.05)
             self.drawTextOnMap(location=carla.Location(location.x, location.y, 1), text=f"({round(location.x)}, {round(location.y)})")
 
@@ -142,13 +148,13 @@ class SimulationVisualization(ClientUser):
     def drawSpectatorPoint(self):
         spectator = self.world.get_spectator()
         location = spectator.get_location()
-        print(f"spectator position ({location.x}, {location.y}, {location.z})")
+        self.logger.debug(f"spectator position ({location.x}, {location.y}, {location.z})")
         drawLocation = carla.Location(location.x, location.y, 0)
         self.drawPoint(location=drawLocation, size=0.1, color=(0, 50, 200))
         self.drawTextOnMap(location=carla.Location(location.x, location.y, 10), text=f"Center ({round(location.x)}, {round(location.y)})")
 
         
-    def drawWaypoints(self, waypoints, z=0.5, life_time=1.0):
+    def drawWaypoints(self, waypoints, color=(25, 25, 25), z=0.5, life_time=1.0):
         """
         Draw a list of waypoints at a certain height given in z.
 
@@ -165,11 +171,29 @@ class SimulationVisualization(ClientUser):
                 begin, 
                 end, 
                 arrow_size=0.3, 
-                color=carla.Color(25, 25, 25), 
+                color=carla.Color(*color), 
                 life_time=life_time
                 )
 
 
+    def drawDirection(self, location, direction, z=0.5, life_time=1.0):
+        """
+        Draw a list of waypoints at a certain height given in z.
+
+            :param world: carla.world object
+            :param waypoints: list or iterable container with the waypoints to draw
+            :param z: height in meters
+        """
+        begin = location + carla.Location(z=z)
+        angle = math.atan2(direction.y, direction.x)
+        end = begin + carla.Location(x=math.cos(angle), y=math.sin(angle))
+        self.world.debug.draw_arrow(
+            begin, 
+            end, 
+            arrow_size=0.3, 
+            color=carla.Color(50, 25, 25), 
+            life_time=life_time
+            )
     def drawAllWaypoints(self, z=0.5, life_time=1.0):
         """
         Draw a list of waypoints at a certain height given in z.
@@ -183,12 +207,26 @@ class SimulationVisualization(ClientUser):
 
 
     def drawDestinationPoint(self, location, life_time=20.0):
-        print(f"destinationSpawnPoint position ({location.x}, {location.y})")
-        overlayLocation = carla.Location(location.x, location.y, 10)
-        self.drawPoint(location=overlayLocation, size=0.2, color=(0, 255, 0), life_time=life_time)
-        self.drawTextOnMap(location=overlayLocation, text=f"dest", life_time=life_time)
+        self.logger.debug(f"destinationSpawnPoint position ({location.x}, {location.y})")
+        overlayLocation = carla.Location(location.x, location.y, 1.5)
+        self.drawPoint(location=overlayLocation, size=0.13, color=(0, 255, 0), life_time=life_time)
+        self.drawTextOnMap(location=overlayLocation - carla.Location(x=-.6, y=.5), text=f"D", life_time=life_time/2)
 
+    
+    def drawPedState(self, state, walker, life_time=1.0):
 
+        from agents.pedestrians.PedState import PedState
+        color = (0, 0, 0)
+        if state == PedState.CROSSING:
+            color = (0, 150, 50)
+        if state == PedState.WAITING:
+            color = (200, 180, 0)
+        if state == PedState.FROZEN:
+            color = (255, 0, 0)
+
+        # self.drawWalkerBB(walker, color = color, life_time=0.1)
+        overlayLocation = walker.get_location() + carla.Location(z=1)
+        self.drawTextOnMap(location=overlayLocation, text=state.value, color=color, life_time=life_time/10)
 
     
 

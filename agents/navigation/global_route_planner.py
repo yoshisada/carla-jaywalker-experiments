@@ -15,6 +15,7 @@ import networkx as nx
 import carla
 from agents.navigation.local_planner import RoadOption
 from agents.tools.misc import vector
+from lib import Utils, LoggerFactory, EmptryGlobalRoute
 
 class GlobalRoutePlanner(object):
     """
@@ -22,6 +23,7 @@ class GlobalRoutePlanner(object):
     """
 
     def __init__(self, wmap, sampling_resolution):
+        self.logger = LoggerFactory.create("Vehicle-GlobalRoutePlanner")
         self._sampling_resolution = sampling_resolution
         self._wmap = wmap
         self._topology = None
@@ -47,6 +49,9 @@ class GlobalRoutePlanner(object):
         route = self._path_search(origin, destination)
         current_waypoint = self._wmap.get_waypoint(origin)
         destination_waypoint = self._wmap.get_waypoint(destination)
+
+        self.logger.debug(f"origin: {origin} destination: {destination}")
+        self.logger.debug(f"current_waypoint: {current_waypoint.transform.location} destination_waypoint: {destination_waypoint.transform.location}")
 
         for i in range(len(route) - 1):
             road_option = self._turn_decision(i, route)
@@ -78,6 +83,9 @@ class GlobalRoutePlanner(object):
                         destination_index = self._find_closest_in_list(destination_waypoint, path)
                         if closest_index > destination_index:
                             break
+        
+        if len(route_trace) == 0:
+            raise EmptryGlobalRoute(f"Global route planner: Empty route from {origin} to {destination}")
 
         return route_trace
 
