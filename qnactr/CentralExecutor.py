@@ -1,10 +1,10 @@
 from random import choice
 from time import sleep
-from subtasks.SubtaskLaneFollow import SubtaskLaneFollow
-from subtasks.SubtaskLaneKeeping import SubtaskLaneKeeping   
-from LongTermMemory import LongTermMemory
-from ComplexCognition import ComplexCognition
-from MotorControl import MotorControl
+from .subtasks import SubtaskLaneFollow
+from .subtasks import SubtaskLaneKeeping   
+from .servers import LongTermMemory
+from .servers import ComplexCognition
+from .servers import MotorControl
 
 
 class CentralExecutor():
@@ -19,8 +19,9 @@ class CentralExecutor():
         self._complexCognitionBuffer = None
         self._motorControlBuffer = None
         self._localMap = None
+        self._executionFrequency = 0.5
 
-        self.start_thread()
+        # self.start_thread()
         self._threadList = [self._subtaskLaneFollow, self._subtaskLaneKeeping]
         pass
 
@@ -51,13 +52,11 @@ class CentralExecutor():
         print("Control is done")
         pass
 
-
-ce = CentralExecutor()
-frequency = 0.35
-while True:
-    ce.monitor()
-    ce.decisionMaking()
-    ce.control()
-    sleep(frequency)
+    def run(self):
+        self.monitor()
+        self.decisionMaking()
+        self.control()
+        sleep(self._executionFrequency)
+        pass
 
 

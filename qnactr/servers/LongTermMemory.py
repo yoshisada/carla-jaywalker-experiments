@@ -1,6 +1,5 @@
 
 from time import sleep
-from Request import Request
 
 class LongTermMemory():
     def __init__(self) -> None:

@@ -1,4 +1,4 @@
-from subtasks.SubtaskThread import SubtaskThread
+from .SubtaskThread import SubtaskThread
 from time import sleep
 
 class SubtaskLaneFollow(SubtaskThread):
