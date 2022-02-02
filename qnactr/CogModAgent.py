@@ -13,7 +13,7 @@ class CogModAgent():
 
         self._vehicleActor = self.spawn_vehicle()
 
-        self._centralExecutor = CentralExecutor()
+        self._centralExecutor = CentralExecutor(self._vehicleActor)
         self._localMap = LocalMap(self._world, self._vehicleActor)
 
         pass
@@ -58,5 +58,7 @@ class CogModAgent():
 
     def update_agent(self):
         current_map = self._localMap.update_local_map()
+        self._centralExecutor.tick_process_request()
+        self._centralExecutor.run(current_map)
 
         pass

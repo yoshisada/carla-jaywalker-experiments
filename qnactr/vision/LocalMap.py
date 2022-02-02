@@ -5,7 +5,7 @@ from agents.navigation.global_route_planner import GlobalRoutePlanner
 
 
 class LocalMap():
-    def __init__(self, world, vehicle, tracking_radius=100.0):
+    def __init__(self, world, vehicle, vehicle_tracking_radius=100.0):
         
         if world is None:
             raise ValueError('need to have map')
@@ -14,7 +14,9 @@ class LocalMap():
         self._world = world
         self._map = self._world.get_map()
         self._vehicle = vehicle
-        self._tracking_radius = tracking_radius
+        self._vehicle_tracking_radius = vehicle_tracking_radius
+
+        self._waypoint_tracking_radius = 1.0
 
         self._global_plan = None
         self._GP_sampling_resolution = 2.0
@@ -43,12 +45,27 @@ class LocalMap():
 
     def update_local_map(self):
         
+        # update plan. discarding the waypoints that are inside lookahead threshold
+        tuple_to_discard = []
+        for wp, ro in self._global_plan:
+            distance = self._vehicle.get_location().distance(wp.transform.location)
+            # print(f'vehicle location: {self._vehicle.get_location()}')
+            # print(f'wp: {wp.transform.location}, distance: {distance}')
+            if distance < self._waypoint_tracking_radius:
+                tuple_to_discard.append((wp, ro))
+                pass
+        if len(tuple_to_discard) != 0:
+            for ttd in tuple_to_discard:
+                print(f'discarding waypoint: {ttd[0]}')
+                self._global_plan.remove(ttd)
+                pass
+
         # update tracked vehicles
         all_vehicle_from_world = self._world.get_actors().filter('vehicle.*')
         self._tracked_vehicles = []
         for vehicle in all_vehicle_from_world:
             distance = self._vehicle.get_location().distance(vehicle.get_location())
-            if vehicle.id == self._vehicle.id or distance > self._tracking_radius:
+            if vehicle.id == self._vehicle.id or distance > self._vehicle_tracking_radius:
                 continue
             else:
                 self._tracked_vehicles.append(vehicle)

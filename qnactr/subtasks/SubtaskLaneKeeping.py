@@ -2,16 +2,18 @@ from .SubtaskThread import SubtaskThread
 from time import sleep
 
 class SubtaskLaneKeeping(SubtaskThread):
-    def __init__(self, subtaskName):
-        SubtaskThread.__init__(self, subtaskName)
+    def __init__(self, subtaskName, vehicle):
+        SubtaskThread.__init__(self, subtaskName, vehicle)
+        
         pass
     
-    def run(self):
-        print("SubtaskLaneKeeping is running")
-        print("SubtaskLaneKeeping halting for a second")
-        sleep(1.0)
-        print("SubtaskLaneKeeping doing something more and halts again")
-        sleep(1.0)
-        print("SubtaskLaneKeeping is done")
+    def run(self, localMap):
+        global_plan = localMap['route']
+        
+        vehicle_location = self._vehicle.get_location()
+        # print(f'current vehicle location: {vehicle_location}')
+        # print(f'running lane keeping subtask')
+        next_waypoint, _ = global_plan[0]
+        return {'next_waypoint': next_waypoint}
         pass
     pass

@@ -64,7 +64,7 @@ map = mapManager.map
 
 visualizer.drawSpawnPoints()
 visualizer.drawSpectatorPoint()
-visualizer.drawAllWaypoints(life_time=0.0)
+# visualizer.drawAllWaypoints(life_time=0.0)
 
 
 bpLib = world.get_blueprint_library()
@@ -79,9 +79,15 @@ for i in range(0, number_spawned_agents):
     spawnPoint, destination_list = planning_dict.popitem()
     cogmod_driver = CogModAgent(world, blueprint, spawnPoint, random.choice(destination_list))
     cogmod_driver.create_global_plan()
+    wpList = []
+    for wp, _ in cogmod_driver.get_global_route():
+        wpList.append(wp)
+    visualizer.drawWaypoints(wpList, life_time=100.0)
+    print(f'wpList: {wpList}')
     agents.append(cogmod_driver)
 
-for agent in agents:
-    agent.update_agent()
+# while True:
+#     for agent in agents:
+#         agent.update_agent()
 
 

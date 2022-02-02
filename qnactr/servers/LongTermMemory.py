@@ -11,7 +11,7 @@ class LongTermMemory():
         pass
 
     def place_request(self, request):
-        print("Placing request to ", self._name)
+        # print("Placing request to ", self._name)
         if len(self._requestQueue) < self._queueSize:
             self._requestQueue.append(request)
         else:
@@ -20,18 +20,18 @@ class LongTermMemory():
         pass
 
     def process_request(self):
-        print("Processing request: ", self._name)
+        # print("Processing request: ", self._name)
         current_request = self._requestQueue[0]
         if current_request.get_request_type() == 'lane_keeping':
             self.get_lane_keeping_parameter()
         elif current_request.get_request_type() == 'lane_follow':
             self.get_lane_follow_parameter()
         sleep(self._request_process_time)
-        print("Done processing request: ", self._name)
+        # print("Done processing request: ", self._name)
         pass
 
     def read_buffer(self):
-        print("Reading result: ", self._name)
+        # print("Reading result: ", self._name)
         return self._buffer
 
     def get_lane_keeping_parameter(self):

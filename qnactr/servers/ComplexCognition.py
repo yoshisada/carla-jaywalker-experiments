@@ -10,7 +10,7 @@ class ComplexCognition():
         pass
 
     def place_request(self, request):
-        print("Placing request to ", self._name)
+        # print("Placing request to ", self._name)
         if len(self._requestQueue) < self._queueSize:
             self._requestQueue.append(request)
         else:
@@ -19,24 +19,21 @@ class ComplexCognition():
         pass
 
     def process_request(self):
-        print("Processing request: ", self._name)
         current_request = self._requestQueue[0]
         if current_request.get_request_type() == 'lane_keeping':
             self.calc_lane_keeping(current_request)
         elif current_request.get_request_type() == 'lane_follow':
             self.calc_lane_follow(current_request)
-        sleep(self._request_process_time)
-        print("Done processing request: ", self._name)
         pass
 
     def read_buffer(self):
-        print("Reading result: ", self._name)
+        # print("Reading result: ", self._name)
         return self._buffer
 
     def calc_lane_keeping(self, request):
-        print("Calculating lane keeping")
+        # print("Calculating lane keeping")
         pass
 
     def calc_lane_follow(self, request):
-        print("Calculating lane follow")
+        # print("Calculating lane follow")
         pass

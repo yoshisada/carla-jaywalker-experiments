@@ -6,12 +6,13 @@ from time import sleep
 
 
 class SubtaskThread(threading.Thread):
-    def __init__(self, subtaskName):
+    def __init__(self, subtaskName, vehicle):
         threading.Thread.__init__(self)
-        self.subtaskName = subtaskName
+        self._subtaskName = subtaskName
+        self._vehicle = vehicle
         pass
     
     @abstractmethod
-    def run(self):
+    def run(self, localMap):
         pass
     pass
