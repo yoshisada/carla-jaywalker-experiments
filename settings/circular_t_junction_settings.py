@@ -62,3 +62,19 @@ circular_t_junction_settings = {
         ]
     },
 }
+
+t_junction_settings = {
+    "setting1": {
+        "ego_spawn_point": [
+            (-49, 12),
+            (-49, 16),
+            (12, 13),
+            (12, 26),
+            (-17, 44),
+            (-21, 44),
+        ],
+        "walker_settings": [
+        ]
+    },
+    
+}
