@@ -10,7 +10,6 @@ from collections import deque
 import random
 
 import carla
-from charset_normalizer import logging
 from agents.navigation.controller import VehiclePIDController
 from agents.tools.misc import draw_waypoints, get_speed
 
@@ -293,7 +292,7 @@ class LocalPlanner(object):
             for _ in range(num_waypoint_removed):
                 self._waypoints_queue.popleft()
 
-        self.logger.info(f"Vehilce location: {self._vehicle.get_location()}")
+        # self.logger.info(f"Vehicle location: {self._vehicle.get_location()}")
         # Get the target waypoint and move using the PID controllers. Stop if no target waypoint
         if len(self._waypoints_queue) == 0:
             control = carla.VehicleControl()
@@ -305,7 +304,7 @@ class LocalPlanner(object):
             self.logger.warn("Vehicle cannot find waypoint")
         else:
             self.target_waypoint, self.target_road_option = self._waypoints_queue[0]
-            self.logger.info(f"Vehilce target_waypoint: {self.target_waypoint}")
+            self.logger.debug(f"Vehicle target_waypoint: {self.target_waypoint}")
             control = self._vehicle_controller.run_step(self._target_speed, self.target_waypoint)
 
         if debug:

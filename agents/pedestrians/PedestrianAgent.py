@@ -26,7 +26,7 @@ class PedestrianAgent(InfoAgent):
         self._world = self._walker.get_world()
         self._map = self._world.get_map()
 
-        self.skip_ticks = 0
+        self.skip_ticks = 20 # takes about 10 ticks for the vehicle to start
         self.time_delta = time_delta
         self.tickCounter = 0
 
@@ -37,40 +37,59 @@ class PedestrianAgent(InfoAgent):
 
         self.collisionSensor = None
         self.obstacleDetector = None
-
-        StateTransitionManager.changeAgentState("self.__init__", self, PedState.WAITING)
         # config parameters
 
+    @property
+    def actorManager(self):
+        return self._localPlanner.actorManager
+    @property
+    def obstacleManager(self):
+        return self._localPlanner.obstacleManager
 
     #region states
 
     def isCrossing(self):
         if self.state == PedState.CROSSING:
             return True
+        return False
+
+    def isWaiting(self):
+        if self.state == PedState.WAITING:
+            return True
+        return False
+
+    def isFinished(self):
+        if self.state == PedState.FINISHED:
+            return True
+        return False
 
     def visualiseState(self):
-        self.visualizer.drawPedState(self.state, self.walker)
+        self.visualizer.drawPedState(self.state, self.walker, life_time=0.1)
     #endregion
     
 
-    def done(self):
-        done = self._localPlanner.done()
-        if done:
-            self.state = PedState.FINISHED
-        return done
-
-    def canUpdate(self):
+    def isInitializing(self): 
         if self.skip_ticks == 0:
-            return True
+            return False
+
         self.tickCounter += 1
+        if self.tickCounter == self.skip_ticks:
+            # time to wait
+            StateTransitionManager.changeAgentState(f"{self.name}.isInitializing", self, PedState.WAITING)
+
         if self.tickCounter >= self.skip_ticks:
-            self.tickCounter = 0
-            return True
-        return False
-    
-    # def updateControl(self):
-    #     "we should not call this. apply batch control"
-    #     self._walker.apply_control(self.calculateControl())
+            return False
+
+        return True
+
+    def reset(self, newStartPoint:carla.Location=None):
+        self.logger.info(f"Resetting")
+        if newStartPoint is not None:
+            self._walker.set_location(newStartPoint)
+
+        self.tickCounter = 0
+        StateTransitionManager.changeAgentState(f"{self.name}.isInitializing", self, PedState.INITALIZING)
+        pass
 
 
     def printLocations(self):
@@ -82,9 +101,12 @@ class PedestrianAgent(InfoAgent):
         if self.destination is None:
             raise Error("Destination is none")
 
+        if self.isInitializing():
+            self.logger.info(f"Pedestrian is initializing.")
+            self.visualiseState()
+            return self._localPlanner.getStopControl()
         
-
-        # self.printLocations()
+ 
         location = self.feetLocation
         direction = self._localPlanner.getDesiredDirection()
         self.visualizer.drawDirection(location, direction, life_time=0.1)
@@ -93,11 +115,6 @@ class PedestrianAgent(InfoAgent):
 
         self.climbSidewalkIfNeeded()
 
-        # control = carla.WalkerControl(
-        #     direction = direction,
-        #     speed = speed,
-        #     jump = False
-        # )
         control = self._localPlanner.calculateNextControl()
 
         self.visualiseState()
@@ -105,13 +122,13 @@ class PedestrianAgent(InfoAgent):
         return control
 
 
-    def calculateNextSpeed(self, direction):
+    # def calculateNextSpeed(self, direction):
 
-        # TODO make a smooth transition
-        # oldControl = self._walker.get_control()
-        # currentSpeed = oldControl.speed
-        # nextSpeed = max()
-        return self.desired_speed
+    #     # TODO make a smooth transition
+    #     # oldControl = self._walker.get_control()
+    #     # currentSpeed = oldControl.speed
+    #     # nextSpeed = max()
+    #     return self.desired_speed
 
 
 
@@ -119,24 +136,28 @@ class PedestrianAgent(InfoAgent):
 
     def canClimbSideWalk(self):
 
-        if self.done():
+        if self.isFinished():
             return False
+
         if self.timeSinceLastJumpMS() < 1000:
             return False
 
         distance = self.distanceToNextSideWalk() 
         if distance is None:
+            self.logger.warn(f"Distance to sidewalk is none!")
+
             return False
 
-        # self.logger.debug(f"current distance to sidewalk is {distance}")
+        self.logger.info(f"current distance to sidewalk is {distance}")
         distance -= self.getOldSpeed() * self.time_delta
-        
-        # self.logger.debug(f"future distance to sidewalk is {distance}")
+        self.logger.info(f"after tick distance to sidewalk is {distance}")
+
         walkerSpeed = self.getOldSpeed()
 
         # if distance < walkerSpeed * 2 and distance > walkerSpeed:
-        if distance < 0.2 and distance > 0.1:
-            self.logger.debug(f"future distance to sidewalk is {distance}. Can jump")
+        # if distance < 0.2 and distance > 0.1:
+        if distance < 0.2:
+            self.logger.info(f"after tick distance to sidewalk is {distance}. Can jump")
             return True
         return False
 
@@ -177,15 +198,16 @@ class PedestrianAgent(InfoAgent):
     
     def distanceToNextSideWalk(self):
         actorLocation = self._walker.get_location()
-        actorXYLocation = carla.Location(x = actorLocation.x, y = actorLocation.y, z=0.)
+        # actorXYLocation = carla.Location(x = actorLocation.x, y = actorLocation.y, z=0.)
         labeledObjects = self.getObstaclesToDistance()
         for lb in labeledObjects:
             if lb.label == carla.CityObjectLabel.Sidewalks:
                 if self.visualizer is not None:
                     self.visualizer.drawPoint(carla.Location(lb.location.x, lb.location.y, 1.0), color=(0, 0, 255), life_time=1.0)
-                sidewalkXYLocation = carla.Location(x = lb.location.x, y = lb.location.y, z=0.)
-                distance = actorXYLocation.distance(sidewalkXYLocation)
-                print(f"Sidewalk location {lb.location} and semantic {lb.label} XY distance {distance}")
+                # sidewalkXYLocation = carla.Location(x = lb.location.x, y = lb.location.y, z=0.)
+                # distance = actorXYLocation.distance_2d(sidewalkXYLocation)
+                distance = actorLocation.distance_2d(lb.location)
+                self.logger.info(f"Sidewalk location {lb.location} and semantic {lb.label} XY distance {distance}")
                 return distance
         return None
 

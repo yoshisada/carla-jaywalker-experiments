@@ -7,12 +7,12 @@ class PedestrianPlanner:
     It's whole job is to send required states to factor models, get the force and state of the pedestrian. Apply the force and state in the world.
     """
 
-    def __init__(self, agent) -> None:
+    def __init__(self, agent, actorManager: ActorManager, obstacleManager: ObstacleManager) -> None:
         self._agent = agent
         self._world = agent.walker.get_world()
         self._map = self.world.get_map()
-        self.actorManager = ActorManager(agent.walker)
-        self.obstacleManager = ObstacleManager(agent.walker)
+        self.actorManager = actorManager
+        self.obstacleManager = obstacleManager
         self._destination = None
         pass
 
@@ -43,8 +43,11 @@ class PedestrianPlanner:
 
     
     def done(self):
-        if self.getDistanceToDestination() < 0.1:
+        if self.getDistanceToDestination() < 0.2:
+            self.logger.warn(f"Reached destination {self.getDistanceToDestination()}")
             return True
+        else:
+            self.logger.info(f"Distance to destination {self.getDistanceToDestination()}")
         return False
             
     def getDistanceToDestination(self):
@@ -52,6 +55,16 @@ class PedestrianPlanner:
 
     def getDesiredDirection(self):
         return Utils.getDirection(self.agent.feetLocation, self._destination, ignoreZ=True)
+
+    def getStopControl(self):
+        oldControl = self.agent.getOldControl()
+        
+        control = carla.WalkerControl(
+            direction = oldControl.direction,
+            speed = 0,
+            jump = False
+        )
+        return control
 
     def getNewControl(self):
         """Calculates new control by multiplying the resultant force by time delta

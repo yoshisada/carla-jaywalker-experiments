@@ -1,10 +1,10 @@
 import carla
 from lib import ActorManager, ObstacleManager, Utils, LoggerFactory
-from .ForceModel import ForceModel
+from .GapModel import GapModel
 from .PedestrianAgent import PedestrianAgent
 import random
 
-class PedGapModel(ForceModel):
+class PedGapModel(GapModel):
 
     def __init__(self, agent: PedestrianAgent, actorManager: ActorManager, obstacleManager: ObstacleManager, factors = None) -> None:
 
@@ -23,7 +23,7 @@ class PedGapModel(ForceModel):
             self.factors = {}
         
         if "desired_gap" not in self.factors:
-            self.factors["desired_gap"] = 20 
+            self.factors["desired_gap"] = 5 
         
         pass
 
@@ -34,7 +34,13 @@ class PedGapModel(ForceModel):
     def calculateForce(self):
 
         if self.agent.isCrossing():
-            return carla.Vector3D() + random.randint(0, 2) # TODO implement force based on distance
+
+            distanceOncoming = self.distanceFromOncomingVehicle()
+            if distanceOncoming is not None:
+                # random will not work. The force should be off while pedestrian is not on road
+                # idea: if nearest waypoint is too far, that means pedestrian is not worried about on coming vehicle. But carla waypoint calculation is not reliable
+                return Utils.createRandomVector(0, 0.5) # TODO implement force based on distance
+                
         return carla.Vector3D() # in othe states this model does not produce force
 
     
@@ -44,19 +50,23 @@ class PedGapModel(ForceModel):
             True
         
         d = self.distanceFromOncomingVehicle()
+        if d is None:
+            return True
+
         # TODO implement the actual gap model. This is very straight forward
-        self.logger.info(f"Min distance to any vehicle is {d}")
         if d > self.desiredGap:
             return True
+
+        self.logger.info(f"Cannot cross as distance distance to oncoming vehicle {d} <= {self.desiredGap}")
         return False
 
     
     def distanceFromOncomingVehicle(self):
         # TODO we are now just measuring distance from all actors
-        vehicles = self.actorManager.getVehicles()
-        minD = 999999
-        for vehicle in vehicles:
-            d = vehicle.get_location().distance_2d(self.agent.location)
-            if d < minD:
-                minD = d
-        return minD
+        vehicle = self.actorManager.getNearestOnComingVehicle()
+        if vehicle is None:
+            self.logger.info(f"No oncoming vehicle")
+            return None
+        distance = self.actorManager.getCurrentDistance(vehicle)
+        self.logger.debug(f"Distance from nearest oncoming vehicle = {distance}")
+        return distance
