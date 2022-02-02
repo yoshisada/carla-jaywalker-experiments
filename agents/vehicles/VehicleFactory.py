@@ -5,6 +5,7 @@ import logging
 
 from agents.navigation.behavior_agent import BehaviorAgent  # pylint: disable=import-error
 from agents.navigation.basic_agent import BasicAgent  # pylint: disable=import-error
+from agents.vehicles.qnactr.CogMod import CogModAgent  # cogmod agent 
 from lib import LoggerFactory, ClientUser
 
 
@@ -44,4 +45,8 @@ class VehicleFactory(ClientUser):
 
     def createBehaviorAgent(self, vehicle: carla.Vehicle, behavior="normal", logLevel=logging.INFO) -> BehaviorAgent:
         agent = BehaviorAgent(vehicle, behavior=behavior)
+        return agent
+
+    def createCogModAgent(self, vehicle):
+        agent = CogModAgent(vehicle)
         return agent
