@@ -20,8 +20,8 @@ class VehiclePIDController():
     """
 
 
-    def __init__(self, vehicle, args_lateral, args_longitudinal, offset=0, max_throttle=0.75, max_brake=0.3,
-                 max_steering=0.8):
+    def __init__(self, vehicle, args_lateral, args_longitudinal, offset=0, 
+                 max_throttle=0.75, max_brake=0.3, max_steering=0.8):
         """
         Constructor method.
 

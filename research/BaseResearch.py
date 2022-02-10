@@ -3,18 +3,18 @@ import os
 from lib import ClientUser, LoggerFactory, MapManager, MapNames, SimulationVisualization
 
 class BaseResearch(ClientUser):
-    def __init__(self, name, client: carla.Client, logLevel, outputDir:str = "logs") -> None:
+    def __init__(self, name, client: carla.Client, mapName, logLevel, outputDir:str = "logs") -> None:
         super().__init__(client)
         logPath = os.path.join(outputDir, f"{name}.log")
         self.logger = LoggerFactory.getBaseLogger(name, defaultLevel=logLevel, file=logPath)
 
         self.mapManager = MapManager(client)
-        self.mapManager.load(MapNames.circle_t_junctions)
+        self.mapManager.load(mapName)
 
         self.visualizer = SimulationVisualization(self.client, self.mapManager)
 
         self.initWorldSettings()
-        self.initVisualizer()
+        # self.initVisualizer()
 
         pass
 

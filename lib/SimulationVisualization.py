@@ -176,7 +176,7 @@ class SimulationVisualization(ClientUser):
                 )
 
 
-    def drawDirection(self, location, direction, z=0.5, life_time=1.0):
+    def drawDirection(self, location, direction, z=0.5, life_time=1.0, arrow_size=0.3):
         """
         Draw a list of waypoints at a certain height given in z.
 
@@ -190,7 +190,7 @@ class SimulationVisualization(ClientUser):
         self.world.debug.draw_arrow(
             begin, 
             end, 
-            arrow_size=0.3, 
+            arrow_size=arrow_size, 
             color=carla.Color(50, 25, 25), 
             life_time=life_time
             )

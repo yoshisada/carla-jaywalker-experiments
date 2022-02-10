@@ -98,5 +98,26 @@ class SettingsManager(ClientUser):
 
         return self._walkerTransforms
 
+    def getNumberOfVehicleWithSpawnPointAndDestination(self):
+        numberOfVehicles = self.currentSetting["number_of_vehicles"]
+        spawnPoints = self.currentSetting["spawn_points"]
+        destinationPoints = self.currentSetting["destination_points"]
+
+        spawnPoints_transforms = []
+        destinationPoints_transforms = []
+
+        for sp in spawnPoints:
+            point_to_location = self._pointToLocation(sp)
+            location_to_transform = self._locationToVehicleSpawnPoint(point_to_location)
+            spawnPoints_transforms.append(location_to_transform)
+        for dp in destinationPoints:
+            point_to_location = self._pointToLocation(dp)
+            location_to_transform = self._locationToVehicleSpawnPoint(point_to_location)
+            destinationPoints_transforms.append(location_to_transform)
+
+        return (numberOfVehicles, spawnPoints_transforms, destinationPoints_transforms)
+        
+
+
 
 
