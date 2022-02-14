@@ -1,67 +1,37 @@
 import carla
-import numpy as np
 from lib import ActorManager, ObstacleManager, Utils
 from .ForceModel import ForceModel
 from .PedestrianAgent import PedestrianAgent
-from agents.pedestrians.factors import InternalFactors
-from .PedUtils import PedUtils
 
 
 class DestinationModel(ForceModel):
 
-    def __init__(self, agent: PedestrianAgent, actorManager: ActorManager, obstacleManager: ObstacleManager, internalFactors: InternalFactors, final_destination=None) -> None:
+    def __init__(self, agent: PedestrianAgent, actorManager: ActorManager, obstacleManager: ObstacleManager, final_destination=None, factors = None) -> None:
 
-        super().__init__(agent, actorManager, obstacleManager, internalFactors=internalFactors)
+        super().__init__(agent, actorManager, obstacleManager)
 
         # self._source = source # source may not be current agent location
         self._finalDestination = final_destination
         self._nextDestination = final_destination
 
-        self.skipForceTicks = 0
-        self.skipForceTicksCounter = 0
+        self.factors = factors
 
         self.initFactors()
 
         pass
 
-    @property
-    def name(self):
-        return f"DestinationModel {self.agent.id}"
     
     def initFactors(self):
-        if "desired_speed" not in self.internalFactors:
-            self.internalFactors["desired_speed"] = 2 
+        if self.factors is None:
+            self.factors = {}
+        
+        if "desired_speed" not in self.factors:
+            self.factors["desired_speed"] = 2 
 
-        if "relaxation_time" not in self.internalFactors:
-            self.internalFactors["relaxation_time"] = 0.1 
+        if "relaxation_time" not in self.factors:
+            self.factors["relaxation_time"] = 0.1 
         
         pass
-
-    # def skipNextTicks(self, n):
-    #     """We can skip n next ticks
-
-    #     Args:
-    #         n ([type]): [description]
-    #     """
-    #     self.skipForceTicks = n
-    #     self.skipForceTicksCounter = 0
-
-    # def needSkip(self):
-    #     """One time skip counter
-
-    #     Returns:
-    #         [type]: [description]
-    #     """
-    #     if self.skipForceTicks == 0:
-    #         return False
-        
-    #     if self.skipForceTicksCounter > self.skipForceTicks:
-    #         self.skipForceTicksCounter = 0
-    #         self.skipForceTicks = 0
-    #         return False
-        
-    #     self.skipForceTicksCounter += 1
-    #     return True
 
     
     def setFinalDestination(self, destination):
@@ -81,23 +51,21 @@ class DestinationModel(ForceModel):
         self._nextDestination = destination # TODO what we want to do is keep a destination queue and pop it to next destination when next destination is reached. 
         
             
-    def setNextDestination(self, destination):
-        self._nextDestination = destination # TODO what we want to do is keep a destination queue and pop it to next destination when next destination is reached. 
-
     def getDistanceToDestination(self):
         return Utils.getDistance(self.agent.feetLocation, self._nextDestination, ignoreZ=True)
 
     
     def getDesiredVelocity(self) -> carla.Vector3D:
-        return self.getDesiredDirection() * self.internalFactors["desired_speed"] 
+        return self.getDesiredDirection() * self.factors["desired_speed"] 
 
     def getDesiredSpeed(self) -> carla.Vector3D:
-        return self.internalFactors["desired_speed"] 
+        return self.factors["desired_speed"] 
 
 
     def getDesiredDirection(self) -> carla.Vector3D:
         return Utils.getDirection(self.agent.feetLocation, self._nextDestination, ignoreZ=True)
-        
+        exit(0)
+        return direction
         
 
     def getDistanceToNextDestination(self):
@@ -105,45 +73,13 @@ class DestinationModel(ForceModel):
 
 
     def calculateForce(self):
-
-        # if self.needSkip:
-        #     return None
-
-        self.calculateNextDestination()
-
-        force = self.calculateForceForDesiredVelocity()
-        
-        return force
-
-
-
-    def calculateNextDestination(self):
-
-
-        # # First we check if we need to go back to origin.
-
-        # TG = self.agent.getAvailableTimeGapWithClosestVehicle()
-        
-        # TTX = PedUtils.timeToCrossNearestLane(self.map, self.location, self._localPlanner.getDestinationModel().getDesiredSpeed())
-
-
-        # if TG > TTX:
-        #     # positive oncoming vehicle force
-        # else:
-        #     # negative oncoming vehicle force.
-
-
-        # # last, check if next destination is reached, if so, set it to final destination
-
-        if self._nextDestination.distance_2d(self.agent.location) < 0.1:
-            self._nextDestination = self._finalDestination
-
+        return self.calculateForceForDesiredVelocity()
     
     def calculateForceForDesiredVelocity(self):
         desiredVelocity = self.getDesiredVelocity()
         oldVelocity = self.agent.getOldVelocity()
 
-        return (desiredVelocity - oldVelocity) / self.internalFactors["relaxation_time"]
+        return (desiredVelocity - oldVelocity) / self.factors["relaxation_time"]
 
     
 

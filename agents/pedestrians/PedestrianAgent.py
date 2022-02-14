@@ -1,21 +1,16 @@
 from msilib.schema import Error
-from random import random
-import numpy as np
 import time
 import carla
 import logging
 from .InfoAgent import InfoAgent
 from lib import SimulationVisualization
-from .planner.PedestrianPlanner import PedestrianPlanner
+from .PedestrianPlanner import PedestrianPlanner
 from .PedState import PedState
 from .StateTransitionManager import StateTransitionManager
-from typing import Dict
-from .PedUtils import PedUtils
-
 
 class PedestrianAgent(InfoAgent):
     
-    def __init__(self, walker, time_delta, visualizer=None, config=None):
+    def __init__(self, walker, desired_speed=1.5, time_delta=0.1, visualizer=None, config=None):
         """
         Initialization the agent paramters, the local and the global planner.
 
@@ -27,7 +22,7 @@ class PedestrianAgent(InfoAgent):
 
         self.name = f"PedestrianAgent #{walker.id}"
         self.state = PedState.INITALIZING
-        super().__init__(self.name, walker, config=config)
+        super().__init__(self.name, walker, desired_speed=desired_speed, config=config)
         self._world = self._walker.get_world()
         self._map = self._world.get_map()
 
@@ -42,26 +37,7 @@ class PedestrianAgent(InfoAgent):
 
         self.collisionSensor = None
         self.obstacleDetector = None
-
-        self.visualizationForceLocation = None
-        if config is not None:
-            if "visualizationForceLocation" in config:
-                self.visualizationForceLocation = config["visualizationForceLocation"]
-
-        self.visualizationInfoLocation = None
-        if config is not None:
-            if "visualizationInfoLocation" in config:
-                self.visualizationInfoLocation = config["visualizationInfoLocation"]
-                
         # config parameters
-
-    @property
-    def world(self):
-        return self._world
-
-    @property
-    def map(self):
-        return self._map
 
     @property
     def actorManager(self):
@@ -69,44 +45,6 @@ class PedestrianAgent(InfoAgent):
     @property
     def obstacleManager(self):
         return self._localPlanner.obstacleManager
-  
-    def getAvailableTimeGapWithClosestVehicle(self):
-        # time gap = time taken for the oncoming vehicle to reach + time to cross the lane.
-        # TODO assuming vehicle driving in agent's nearest lane 
-        # TODO Assuming pedestrian will cross at desired speed.
-        TTC = self.actorManager.pedPredictedTTCNearestOncomingVehicle()
-        TG = self.actorManager.pedTGNearestOncomingVehicle()
-        
-        self.logger.info(f"predicted TTC = {TTC} seconds")
-        self.logger.info(f"absolute TG (ignoring conflict point) = {TG} seconds")
-
-        if TG is None: # Vehicle already crossed
-            return None
-
-        # conflictPoint = self._localPlanner.getPredictedConflictPoint()
-        # self.logger.info(f"predicted conflictPoint = {conflictPoint}")
-        # if conflictPoint is None:
-        #     # self.logger.info(f"vehicle velo: {self.actorManager.nearestOncomingVehicle.get_velocity()}")
-        #     # self.logger.info(f"vehicle location: {self.actorManager.nearestOncomingVehicle.get_location()}")
-        #     # self.logger.info(f"ped velo: {self.velocity}")
-        #     # self.logger.info(f"ped location: {self.location}")
-        #     return None # already pass the conflict zone
-
-
-        TG = self.addError(TG)
-
-        self.logger.info(f"Perceived TG (Time gap) = {TG} seconds")
-
-        return TG
-
-    def addError(self, TTC):
-        # TODO better modeling than a noise, error = f(distance, speed, occlusions, etc)"
-        noiseFactor = np.random.uniform(0.8, 1.2)
-        return TTC * noiseFactor # TODO error modeling in Gap
-
-    
-    def getPredictedConflictPoint(self):
-        return self._localPlanner.getPredictedConflictPoint()
 
     #region states
 
@@ -125,37 +63,8 @@ class PedestrianAgent(InfoAgent):
             return True
         return False
 
-    # region visualization
     def visualiseState(self):
         self.visualizer.drawPedState(self.state, self.walker, life_time=0.1)
-
-
-    def visualizeConflictPoint(self):
-        conflictPoint = self._localPlanner.getPredictedConflictPoint()
-        if conflictPoint is None:
-            return
-        self.visualizer.drawPoint(conflictPoint, size=0.2, color=(255, 0, 0), life_time = 0.1)
-
-    
-
-    def visualiseForces(self):
-        forces = self._localPlanner.modelForces
-
-        visualizationForceLocation = self.location + carla.Location(x=10)
-        if self.visualizationForceLocation is not None:
-            visualizationForceLocation = self.visualizationForceLocation
-
-        visualizationInfoLocation = self.location + carla.Location(x=10)
-        if self.visualizationInfoLocation is not None:
-            visualizationInfoLocation = self.visualizationInfoLocation
-
-        self.visualizer.visualizeForces(
-            self.name, 
-            forces = forces, 
-            forceCenter = visualizationForceLocation, 
-            infoCenter = visualizationInfoLocation, 
-            life_time=0.1
-            )
     #endregion
     
 
@@ -204,16 +113,11 @@ class PedestrianAgent(InfoAgent):
         # speed = self.calculateNextSpeed(direction)
 
 
-        if self.climbSidewalkIfNeeded():
-            # return a stop control
-            return self._localPlanner.getStopControl()
+        self.climbSidewalkIfNeeded()
 
         control = self._localPlanner.calculateNextControl()
 
-        self.visualizeConflictPoint()
         self.visualiseState()
-        self.visualiseForces()
-        
 
         return control
 
@@ -266,7 +170,7 @@ class PedestrianAgent(InfoAgent):
 
     def climbSidewalkIfNeeded(self):
 
-        location = self.location
+        location = self.feetLocation
 
         if self.canClimbSideWalk():
             self.updateJumped()
@@ -274,8 +178,7 @@ class PedestrianAgent(InfoAgent):
             # self._walker.add_force(carla.Vector3D(0, 0, 10))
             # velocity = self.getOldVelocity() # sometimes old velocity is too low due to collision with the sidewalk..
             
-            # velocity = self.speedToVelocity(self.desired_speed)
-            velocity = self.speedToVelocity(2.0)
+            velocity = self.speedToVelocity(self.desired_speed)
 
             self._walker.set_location(
                 carla.Location(
@@ -283,8 +186,6 @@ class PedestrianAgent(InfoAgent):
                     location.y + velocity.y * self.time_delta * 5,
                     location.z + 0.5
             ))
-            return True
-        return False
 
     def getObstaclesToDistance(self):
         actorLocation = self._walker.get_location()
