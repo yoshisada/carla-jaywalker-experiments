@@ -47,6 +47,6 @@ class VehicleFactory(ClientUser):
         agent = BehaviorAgent(vehicle, behavior=behavior)
         return agent
 
-    def createCogModAgent(self, vehicle):
-        agent = CogModAgent(vehicle)
+    def createCogModAgent(self, vehicle, server_tick_frequency, destinationPoint):
+        agent = CogModAgent(vehicle, server_tick_frequency, destinationPoint)
         return agent

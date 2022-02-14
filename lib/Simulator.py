@@ -47,7 +47,9 @@ class Simulator(ClientUser):
 
         try:
             for i in range(maxTicks):
-                world_snapshot = self.world.wait_for_tick()
+                world_snapshot = self.world.wait_for_tick() # asynchronous mode 
+                # world_snapshot = self.world.tick() # synchronous mode
+                
                 if i % 100 == 0:
                     print(f"world ticks {i}")
                 for onTicker in self.onTickers:

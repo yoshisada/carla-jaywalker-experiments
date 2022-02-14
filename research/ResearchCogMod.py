@@ -44,7 +44,7 @@ class ResearchCogMod(BaseResearch):
         # self.vehicle.destroy()
 
     def setup(self):
-        self.settingsManager.load("setting4")
+        self.settingsManager.load("setting2")
         self.numberOfVehicles, self.spawnPointTransforms, self.destinationPointTransforms = self.settingsManager.getNumberOfVehicleWithSpawnPointAndDestination()
         self.simulator = None # populated when run
         pass
@@ -120,6 +120,11 @@ class ResearchCogMod(BaseResearch):
 
     def createVehicle(self):
 
+        server_tick_frequency = [
+            {'longterm_memory': 3, 'complex_cognition': 3, 'motor_control': 3,},
+            {'longterm_memory': 1, 'complex_cognition': 1, 'motor_control': 1}
+                                        ]
+
         for i in range(self.numberOfVehicles):
             vehicleSpawnPoint = self.spawnPointTransforms[i]
             destinationPoint = self.destinationPointTransforms[i]
@@ -131,8 +136,13 @@ class ResearchCogMod(BaseResearch):
             else:
                 self.logger.info(f"successfully spawn vehicle {vehicle.id} at {vehicleSpawnPoint.location.x, vehicleSpawnPoint.location.y, vehicleSpawnPoint.location.z}")   
             
-            vehicleAgent = self.vehicleFactory.createCogModAgent(vehicle=vehicle)
-            vehicleAgent.set_destination(destinationPoint)
+            vehicleAgent = self.vehicleFactory.createCogModAgent(vehicle=vehicle, 
+                                                                 server_tick_frequency = server_tick_frequency[i], 
+                                                                 destinationPoint=destinationPoint)
+            
+
+            
+            # vehicleAgent.set_destination(destinationPoint)
 
             
 
@@ -196,6 +206,8 @@ class ResearchCogMod(BaseResearch):
 
         self.world.wait_for_tick()
 
+        # self.set_sychronous_mode_with_fixed_delta(0.03)
+
         # onTickers = [self.visualizer.onTick, self.onTick]
         onTickers = [self.onTick]
         onEnders = [self.onEnd]
@@ -207,6 +219,12 @@ class ResearchCogMod(BaseResearch):
         # # except Exception as e:
         # #     self.logger.exception(e)
         pass
+
+    def set_sychronous_mode_with_fixed_delta(self, fixed_delta=0.05):
+        settings = self.world.get_settings()
+        settings.synchronous_mode = True # Enables synchronous mode
+        settings.fixed_delta_seconds = fixed_delta # Sets fixed time step
+        self.world.apply_settings(settings)
 
 
     # def restart(self, world_snapshot):
@@ -287,6 +305,7 @@ class ResearchCogMod(BaseResearch):
                 agent_to_remove.append(agent)
             else:
                 agent.update_agent()
+                # print(f'agent control {agent.vehicle.get_control()}')
                 self.draw_target_waypoint(agent)
                 self.draw_global_plan(agent)
 

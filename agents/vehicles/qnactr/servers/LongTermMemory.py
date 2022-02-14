@@ -48,7 +48,7 @@ class LongTermMemory(BaseCognitiveServer):
         return 15.0 
 
     def get_idm_parameters(self):
-        result_dict = {'desired_velocity': 5.5 , # m/s
+        result_dict = {'desired_velocity': 3.5 , # m/s
                        'safe_time_headway': 1.5, # s
                        'max_acceleration': 0.73, # m/s^2
                        'comfort_deceleration': 1.67, # m/s^2
@@ -58,9 +58,6 @@ class LongTermMemory(BaseCognitiveServer):
                        }
 
         return result_dict
-
-
-
 
 
     # def __init__(self, frequency=1):

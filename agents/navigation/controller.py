@@ -123,7 +123,7 @@ class PIDLongitudinalController():
         self._dt = dt
         self._error_buffer = deque(maxlen=10)
 
-    def run_step(self, target_speed, debug=False):
+    def run_step(self, target_speed, debug=True):
         """
         Execute one step of longitudinal control to reach a given target speed.
 
@@ -134,7 +134,7 @@ class PIDLongitudinalController():
         current_speed = get_speed(self._vehicle)
 
         if debug:
-            print('Current speed = {}'.format(current_speed))
+            print(f'id {self._vehicle.id} current {round(current_speed, 2)}, target {round(target_speed, 2)}')
 
         return self._pid_control(target_speed, current_speed)
 

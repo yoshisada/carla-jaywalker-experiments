@@ -53,11 +53,11 @@ class ComplexCognition(BaseCognitiveServer):
         idm_parameters = curRequest.data['idm_parameters']
 
         idm = IDM(idm_parameters, localMap)
-        velocity = idm.calc_velocity()
+        velocity = idm.calc_velocity() * 3.6
 
-        print(f'next velocity is {velocity}')
+        # print(f'next velocity is {velocity}')
 
-        return velocity * 3.6 
+        return velocity
 
     def get_next_waypoint(self, curRequest):
         #   process one step for the subtasks 
