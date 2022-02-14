@@ -15,8 +15,6 @@ class LocalMap():
         self.map = self.world.get_map()
         self.vehicle_tracking_radius = vehicle_tracking_radius
 
-        self._waypoint_tracking_radius = 1.0
-
         self.global_plan = None
         self.GP_sampling_resolution = 1.0 # more means less points
         self.global_planner = GlobalRoutePlanner(self.map, 
@@ -24,8 +22,6 @@ class LocalMap():
         
         self.cur_road_id = None
         
-
-
         self.tracked_vehicles = []
         self.tracked_traffic_signs = []
 
@@ -119,6 +115,8 @@ class LocalMap():
         tuple_to_discard = []
         nearest_waypoint = self.map.get_waypoint(self.vehicle.get_location())
         
+        # sometimes due to high speed vehcile misses some waypoint at the end of the roads
+        #  next block ensures all the waypoints are removed properly
         if nearest_waypoint.road_id != self.cur_road_id:
             for wp, ro in self.global_plan:
                 if wp.road_id == self.cur_road_id:
