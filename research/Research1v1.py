@@ -1,3 +1,4 @@
+from genericpath import sameopenfile
 import carla
 import logging
 import random
@@ -6,6 +7,7 @@ from .BaseResearch import BaseResearch
 from settings.circular_t_junction_settings import circular_t_junction_settings
 from settings import SettingsManager
 from agents.pedestrians import PedestrianFactory
+from agents.pedestrians.factors import Factors
 from agents.vehicles import VehicleFactory
 from lib import Simulator
 from lib import Utils
@@ -17,7 +19,7 @@ class Research1v1(BaseResearch):
         super().__init__(name=self.name, client=client, logLevel=logLevel, outputDir=outputDir)
 
         self.settingsManager = SettingsManager(self.client, circular_t_junction_settings)
-        self.pedFactory = PedestrianFactory(self.client, visualizer=self.visualizer)
+        self.pedFactory = PedestrianFactory(self.client, visualizer=self.visualizer, time_delta=self.time_delta)
         self.vehicleFactory = VehicleFactory(self.client, visualizer=self.visualizer)
 
         self.setup()
@@ -31,7 +33,7 @@ class Research1v1(BaseResearch):
         self.vehicle.destroy()
 
     def setup(self):
-        self.settingsManager.load("setting1")
+        self.settingsManager.load("setting3")
 
         self.walker = None
         self.walkerAgent = None
@@ -41,7 +43,9 @@ class Research1v1(BaseResearch):
 
         self.vehicle = None
         self.vehicleAgent = None
-        self.vehicleSpawnPoint = self.settingsManager.getEgoSpawnpoint()
+        self.vehicleSetting = self.getVehicleSetting()
+        self.vehicleSpawnPoint = self.settingsManager.locationToVehicleSpawnPoint(self.vehicleSetting.source)
+        self.vehicleDestination = self.vehicleSetting.destination
 
         self.simulator = None # populated when run
 
@@ -50,6 +54,11 @@ class Research1v1(BaseResearch):
         walkerSettings = self.settingsManager.getWalkerSettings()
         walkerSetting = walkerSettings[1]
         return walkerSetting
+
+    def getVehicleSetting(self):
+        vehicleSetting = self.settingsManager.getVehicleSettings()
+        vehicleSetting = vehicleSetting[0]
+        return vehicleSetting
 
 
     def createWalker(self):
@@ -70,7 +79,14 @@ class Research1v1(BaseResearch):
         
         self.world.wait_for_tick() # otherwise we can get wrong agent location!
 
-        self.walkerAgent = self.pedFactory.createAgent(walker=self.walker, logLevel=logging.DEBUG)
+        optionalFactors = [Factors.CROSSING_ON_COMING_VEHICLE]
+
+        config = {
+            "visualizationForceLocation": carla.Location(x=-150.0, y=2.0, z=1.5),
+            "visualizationInfoLocation": carla.Location(x=-155.0, y=0.0, z=1.5)
+        }
+
+        self.walkerAgent = self.pedFactory.createAgent(walker=self.walker, logLevel=logging.DEBUG, optionalFactors=optionalFactors, config=config)
 
         self.walkerAgent.setDestination(self.walkerDestination)
         self.visualizer.drawDestinationPoint(self.walkerDestination)
@@ -96,7 +112,10 @@ class Research1v1(BaseResearch):
         self.vehicleAgent = self.vehicleFactory.createBehaviorAgent(self.vehicle, behavior='normal', logLevel=logging.DEBUG)
 
         spawnXYLocation = carla.Location(x=vehicleSpawnPoint.location.x, y=vehicleSpawnPoint.location.y, z=0.001)
-        destination = self.getNextDestination(spawnXYLocation)
+
+        # destination = self.getNextDestination(spawnXYLocation)
+        destination = self.vehicleSetting.destination
+
         self.vehicleAgent.set_destination(destination, start_location=spawnXYLocation)
         self.visualizer.drawDestinationPoint(destination)
 
@@ -126,12 +145,11 @@ class Research1v1(BaseResearch):
 
         # return
 
-        self.createWalker()
         self.createVehicle()
-
+        self.createWalker()
         self.world.wait_for_tick()
 
-        onTickers = [self.visualizer.onTick, self.onTick, self.walkerAgent.actorManager.onTick, self.walkerAgent.obstacleManager.onTick, self.restart]
+        onTickers = [self.visualizer.onTick, self.onTick, self.restart]
         onEnders = [self.onEnd]
         self.simulator = Simulator(self.client, onTickers=onTickers, onEnders=onEnders)
 
@@ -148,7 +166,7 @@ class Research1v1(BaseResearch):
             # 1. recreated vehicle
             self.recreateVehicle()
             # 2. reset walker
-            self.resetWalker(reverse=False)
+            self.resetWalker(sameOrigin=False)
 
     
     def recreateVehicle(self):
@@ -160,27 +178,38 @@ class Research1v1(BaseResearch):
         self.vehicle = None
         self.createVehicle()
 
-    def resetWalker(self, reverse=False):
+    def resetWalker(self, sameOrigin=True):
 
-        # default keeps the same start and end as the first episode
-        source = self.walkerSetting.source
-        newDest = self.walkerSetting.destination
+        if sameOrigin == True:
+            
+            self.walkerAgent.reset(newStartPoint=self.walkerSetting.source)
+            self.walkerAgent.setDestination(self.walkerSetting.destination)
+            return 
 
-        if reverse:
-            source =  self.walkerAgent.destination
-            if self.walkerAgent.destination == newDest: # get back to source
-                newDest = source
-                
-
-        self.walkerAgent.reset()
-        self.walkerAgent.setDestination(self.walkerSetting.source)
+        if self.walkerAgent.location.distance_2d(self.walkerSetting.source) < 1: # currently close to source
+            self.walkerAgent.reset()
+            self.walkerAgent.setDestination(self.walkerSetting.destination)
+        else:
+            self.walkerAgent.reset()
+            self.walkerAgent.setDestination(self.walkerSetting.source)
     
     def onEnd(self):
         self.destoryActors()
 
     def onTick(self, world_snapshot):
+
+        self.walkerAgent.onTickStart(world_snapshot)
+
         self.updateWalker(world_snapshot)
         self.updateVehicle(world_snapshot)
+
+        # draw waypoints upto walker
+
+        walkerWp = self.map.get_waypoint(self.walkerAgent.location).transform.location
+        waypoints = Utils.getWaypointsToDestination(self.vehicle, walkerWp)
+        self.visualizer.drawWaypoints(waypoints, color=(0, 0, 0), z=1, life_time=0.1)
+        self.logger.info(f"Linear distance to pedestrian {self.walkerAgent.actorManager.distanceFromNearestOncomingVehicle()}")
+        self.logger.info(f"Arc distance to pedestrian {Utils.getDistanceCoveredByWaypoints(waypoints)}")
     
     
     def updateWalker(self, world_snapshot):

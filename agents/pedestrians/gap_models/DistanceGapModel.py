@@ -1,35 +1,31 @@
 import carla
+from agents.pedestrians.factors import InternalFactors
 from lib import ActorManager, ObstacleManager, Utils, LoggerFactory
 from .GapModel import GapModel
-from .PedestrianAgent import PedestrianAgent
-import random
+from agents.pedestrians.PedestrianAgent import PedestrianAgent
 
-class PedGapModel(GapModel):
+class DistanceGapModel(GapModel):
 
-    def __init__(self, agent: PedestrianAgent, actorManager: ActorManager, obstacleManager: ObstacleManager, factors = None) -> None:
+    def __init__(self, agent: PedestrianAgent, actorManager: ActorManager, obstacleManager: ObstacleManager, internalFactors: InternalFactors) -> None:
 
-        super().__init__(agent, actorManager, obstacleManager)
-        self.name = f"PedGapModel #{agent.id}"
+        super().__init__(agent, actorManager, obstacleManager, internalFactors=internalFactors)
+        self.name = f"DistanceGapModel #{agent.id}"
         self.logger = LoggerFactory.create(self.name)
-
-        self.factors = factors
         self.initFactors()
 
         pass
 
+
+    @property
+    def name(self):
+        return f"BrewerGapModel {self.agent.id}"
     
     def initFactors(self):
-        if self.factors is None:
-            self.factors = {}
-        
-        if "desired_gap" not in self.factors:
-            self.factors["desired_gap"] = 5 
-        
         pass
 
     @property
     def desiredGap(self):
-        return self.factors["desired_gap"]
+        return self.internalFactors["desired_distance_gap"]
 
     def calculateForce(self):
 
@@ -62,11 +58,4 @@ class PedGapModel(GapModel):
 
     
     def distanceFromOncomingVehicle(self):
-        # TODO we are now just measuring distance from all actors
-        vehicle = self.actorManager.getNearestOnComingVehicle()
-        if vehicle is None:
-            self.logger.info(f"No oncoming vehicle")
-            return None
-        distance = self.actorManager.getCurrentDistance(vehicle)
-        self.logger.debug(f"Distance from nearest oncoming vehicle = {distance}")
-        return distance
+        return self.actorManager.distanceFromNearestOncomingVehicle()

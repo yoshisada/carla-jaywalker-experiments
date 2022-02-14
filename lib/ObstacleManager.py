@@ -8,10 +8,11 @@ class ObstacleManager:
     """Every agent has their own instance of the obstacle manager
     """
 
-    def __init__(self, actor: carla.Actor):
+    def __init__(self, actor: carla.Actor, time_delta):
         
         self.name = f"ObstacleManager #{actor.id}"
         self.logger = LoggerFactory.create(self.name)
+        self.time_delta = time_delta
 
         self._actor = actor
         self._world = actor.get_world()
@@ -31,7 +32,7 @@ class ObstacleManager:
         return self._world
 
     
-    def onTick(self, world_snapshot):
+    def onTickStart(self, world_snapshot):
         pass
     
     def obstacleIn(self, obstacles: List[carla.LabelledPoint], obstacle: carla.LabelledPoint):

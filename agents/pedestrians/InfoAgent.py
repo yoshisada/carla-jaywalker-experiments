@@ -1,13 +1,13 @@
 import carla
 from lib import LoggerFactory
-from .PedestrianPlanner import PedestrianPlanner
+# from .planner.PedestrianPlanner import PedestrianPlanner
 
 class InfoAgent:
-    def __init__(self, name, walker, desired_speed=1.5, config=None):
+    def __init__(self, name, walker, config=None):
         self._walker = walker
-        self.desired_speed = desired_speed
         # self._acceleration = 1 #m/s^2
-        self._localPlanner:PedestrianPlanner = None
+        self._localPlanner = None
+        # self._localPlanner:PedestrianPlanner = None
 
         self._logger = LoggerFactory.create(name, config)
 
@@ -27,11 +27,24 @@ class InfoAgent:
     def walker(self):
         return self._walker
         
-
+    @property
+    def control(self):
+        return self._walker.get_control()
         
     @property
     def location(self):
         return self._walker.get_location()
+
+    @property
+    def velocity(self):
+        return self._walker.get_velocity()
+
+    @property
+    def direction(self):
+        direction = self.control.direction
+        if direction is None:
+            return self.velocity.make_unit_vector()
+        return direction
 
     @property
     def feetLocation(self):
@@ -42,10 +55,12 @@ class InfoAgent:
     def getHeadLocation(self):
         raise Exception("Not implemented yet")
 
+    def onTickStart(self, world_snapshot):
+        self._localPlanner.onTickStart(world_snapshot)
 
     # region planning
 
-    def setLocalPlanner(self, planner: PedestrianPlanner):
+    def setLocalPlanner(self, planner: any):
         self._localPlanner = planner
 
         
@@ -55,6 +70,7 @@ class InfoAgent:
 
     def setDestination(self, destination: carla.Location):
         self._localPlanner.setDestination(destination)
+
 
     
     # def set_destination(self, destination):

@@ -3,19 +3,24 @@ import random
 import logging
 
 from agents.pedestrians.PedestrianAgent import PedestrianAgent
-from agents.pedestrians.SingleOncomingVehicleLocalPlanner import SingleOncomingVehicleLocalPlanner
+from agents.pedestrians.planner.SingleOncomingVehicleLocalPlanner import SingleOncomingVehicleLocalPlanner
+from agents.pedestrians.factors import InternalFactors
 from lib import LoggerFactory, ClientUser
 from lib.ActorManager import ActorManager
 from lib.ObstacleManager import ObstacleManager
+from typing import List
+from agents.pedestrians.factors import *
+
 
 class PedestrianFactory(ClientUser):
 
+    internalFactorPath = "settings/internal_factors_default.yaml"
 
     walkers = []
     collisionSensors = {}
     obstacleDetectors = {}
 
-    def __init__(self, client: carla.Client, time_delta=0.1, visualizer=None):
+    def __init__(self, client: carla.Client, time_delta, visualizer=None):
         
         self.name = "PedestrianFactory"
         self.logger = LoggerFactory.create(self.name)
@@ -65,25 +70,48 @@ class PedestrianFactory(ClientUser):
         return PedestrianFactory.obstacleDetectors[walker]
 
     
-    def createAgent(self, walker: carla.Walker, desired_speed=1.5, logLevel=logging.INFO) -> PedestrianAgent:
+    def createAgent(
+        self, 
+        walker: carla.Walker, 
+        logLevel=logging.INFO, 
+        internalFactorsPath = None, 
+        optionalFactors: List[Factors] = None,
+        config=None
+        ) -> PedestrianAgent:
+
+        if config is None:
+            config = {}
+        config["LOG_LEVEL"] = logLevel
+
         agent = PedestrianAgent(
             walker, 
-            desired_speed=desired_speed,
             visualizer=self.visualizer, 
             time_delta=self.time_delta, 
-            config={"LOG_LEVEL": logLevel}
+            config=config
             )
 
-        self.addPlanners(agent)
+        self.addPlanners(agent, internalFactorsPath=internalFactorsPath, optionalFactors=optionalFactors)
         # self.initSensors(agent)
         
         return agent
 
-    def addPlanners(self, agent: PedestrianAgent):
+    def addPlanners(self, agent: PedestrianAgent, internalFactorsPath = None, optionalFactors: List[Factors] = None):
         
-        actorManager = ActorManager(agent.walker)
-        obstacleManager = ObstacleManager(agent.walker)
-        localPlanner = SingleOncomingVehicleLocalPlanner(agent, actorManager=actorManager, obstacleManager=obstacleManager)
+        actorManager = ActorManager(agent.walker, time_delta=self.time_delta)
+        obstacleManager = ObstacleManager(agent.walker, time_delta=self.time_delta)
+
+        if internalFactorsPath is None:
+            self.logger.warn(f"Internation factor path is None. Using the default at ({PedestrianFactory.internalFactorPath})")
+            internalFactorsPath = PedestrianFactory.internalFactorPath
+        
+        internalFactors = InternalFactors(internalFactorsPath)
+
+
+        localPlanner = SingleOncomingVehicleLocalPlanner(agent, actorManager=actorManager, obstacleManager=obstacleManager, internalFactors=internalFactors, time_delta=self.time_delta)
+
+        if optionalFactors is not None:
+            localPlanner.createOptionalModels(optionalFactors=optionalFactors)
+            
         agent.setLocalPlanner(localPlanner)
 
         
