@@ -38,7 +38,7 @@ class IDM():
         self.minimum_distance = parameters_dict["minimum_distance"]
         self.vehicle_length = parameters_dict["vehicle_length"]
 
-        self.far_distance = 300
+        self.far_distance = 100.0
 
         self.local_map = local_map
         # self.vehicle = self.local_map.vehicle
@@ -51,8 +51,18 @@ class IDM():
         """
         vehicle_velocity = self.vehicle_velocity2D()
 
+        gap = 9999
+        vehicle_location = self.local_map.vehicle.get_location()
+        vehicle_location = carla.Vector3D(vehicle_location.x, vehicle_location.y, 0)
+        if self.local_map.vehicle_at_front is not None:
+            vehicle_location_at_front = self.local_map.vehicle_at_front.get_location()
+            vehicle_location_at_front = carla.Vector3D(vehicle_location_at_front.x, vehicle_location_at_front.y, 0)
+            distance = vehicle_location_at_front - vehicle_location
+            gap = distance.length()
+            
+
         acceleration = math.pow((vehicle_velocity / self.desired_velocity), 4)
-        deceleration = math.pow(self.calc_desired_gap() / self.far_distance, 2)
+        deceleration = math.pow(self.calc_desired_gap() / min(self.far_distance, gap), 2)
 
         ret = float(self.max_acceleration * (1 - acceleration - deceleration))
         return ret

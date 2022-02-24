@@ -7,10 +7,27 @@ from agents.vehicles.qnactr.Request import Request
 
 class LongTermMemory(BaseCognitiveServer):
 
-    def __init__(self, queue_length=10, frequency=2):
+    def __init__(self, queue_length=10, frequency=2, subtasks_parameters=None):
         super().__init__(queue_length, frequency)
-
         self.tick_counter = 0
+        if subtasks_parameters is None:
+            selfsubtasks_parameters = {
+                'subtasks_parameters': {
+                    'lane_following': {
+                        'desired_velocity': 3.5 , # m/s
+                        'safe_time_headway': 1.5, # s
+                        'max_acceleration': 0.73, # m/s^2
+                        'comfort_deceleration': 1.67, # m/s^2
+                        'acceleration_exponent': 4, 
+                        'minimum_distance': 2, # m
+                        'vehicle_length': 1, # m
+                    },
+                    'lane_keeping': {
+                        'far_distance': 15.0,
+                    }, 
+                },
+            }
+        self.subtask_parameters = subtasks_parameters
         pass
 
     def add_request(self, request):
@@ -45,19 +62,10 @@ class LongTermMemory(BaseCognitiveServer):
 
 
     def get_far_distance(self):
-        return 15.0 
+        return self.subtask_parameters['lane_keeping']['far_distance'] 
 
     def get_idm_parameters(self):
-        result_dict = {'desired_velocity': 3.5 , # m/s
-                       'safe_time_headway': 1.5, # s
-                       'max_acceleration': 0.73, # m/s^2
-                       'comfort_deceleration': 1.67, # m/s^2
-                       'acceleration_exponent': 4, 
-                       'minimum_distance': 2, # m
-                       'vehicle_length': 1, # m
-                       }
-
-        return result_dict
+        return self.subtask_parameters['lane_following']
 
 
     # def __init__(self, frequency=1):

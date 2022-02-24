@@ -1,18 +1,22 @@
 import eventlet
 import time
+
+from research.SimulationMode import SimulationMode
 from .ClientUser import ClientUser
 from .LoggerFactory import LoggerFactory
 import traceback
 
 class Simulator(ClientUser):
 
-    def __init__(self, client, onTickers=None, onEnders=None, useThreads=False, sleep=0.05):
+    def __init__(self, client, onTickers=None, onEnders=None, useThreads=False, sleep=0.01, simulationMode=SimulationMode.ASYNCHRONOUS):
         self.name = "Simulator"
         self.logger = LoggerFactory.create(self.name)
         super().__init__(client)
         self.pool = eventlet.GreenPool()
         self.useThreads = useThreads
         self.sleep = sleep
+        
+        self.simulationMode = simulationMode
 
         self.onTickers = [] # methods to call on tick
         if onTickers is not None:
@@ -47,8 +51,11 @@ class Simulator(ClientUser):
 
         try:
             for i in range(maxTicks):
-                world_snapshot = self.world.wait_for_tick() # asynchronous mode 
-                # world_snapshot = self.world.tick() # synchronous mode
+                if self.simulationMode == SimulationMode.SYNCHRONOUS:
+                    world_snapshot = self.world.tick() # synchronous mode
+                    # print(f'synchronous mode  {world_snapshot}')
+                if self.simulationMode == SimulationMode.ASYNCHRONOUS:
+                    world_snapshot = self.world.wait_for_tick() # asynchronous mode 
                 
                 if i % 100 == 0:
                     print(f"world ticks {i}")

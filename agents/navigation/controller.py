@@ -123,7 +123,7 @@ class PIDLongitudinalController():
         self._dt = dt
         self._error_buffer = deque(maxlen=10)
 
-    def run_step(self, target_speed, debug=True):
+    def run_step(self, target_speed, debug=False):
         """
         Execute one step of longitudinal control to reach a given target speed.
 

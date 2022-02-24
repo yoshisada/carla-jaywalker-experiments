@@ -1,3 +1,4 @@
+from http import server
 import carla
 import logging
 
@@ -116,7 +117,32 @@ class SettingsManager(ClientUser):
             destinationPoints_transforms.append(location_to_transform)
 
         return (numberOfVehicles, spawnPoints_transforms, destinationPoints_transforms)
-        
+
+    def getNumberOfAgentsWithParameters(self):
+        numberOfAgents = self.currentSetting["number_of_agents"]
+
+        agent_parameter_list = []
+        for i in range(1, numberOfAgents+1):
+            current_setting = self.currentSetting[str(i)]
+
+            spawn_coordinate = current_setting["spawn_point"]
+            destination_coordinate = current_setting["destination_point"]
+
+            spawn_location = self._pointToLocation(spawn_coordinate)
+            destination_location = self._pointToLocation(destination_coordinate)
+
+            spawn_transform = self._locationToVehicleSpawnPoint(spawn_location)
+            destination_transform = self._locationToVehicleSpawnPoint(destination_location)
+
+            current_setting['spawn_point'] = spawn_transform
+            current_setting['destination_point'] = destination_transform
+
+            agent_parameter_list.append(current_setting)
+            
+        # print(agent_parameter_list)
+        return (numberOfAgents, agent_parameter_list) 
+
+    
 
 
 

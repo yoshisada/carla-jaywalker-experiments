@@ -1,4 +1,4 @@
-
+import carla 
 from agents.navigation.controller import VehiclePIDController
 from agents.vehicles.qnactr.Request import Request
 from agents.vehicles.qnactr.map.LocalMap import LocalMap
@@ -11,26 +11,37 @@ from agents.vehicles.qnactr.subtasks.LaneKeeping import LaneKeeping, SubtaskType
 
 
 
+
 class CogModAgent():
-    def __init__(self, vehicle, server_tick_frequency, destinationPoint):
+    def __init__(self, id, vehicle, destination_point, driver_profile):
         if vehicle is None:
             raise ValueError('need to have vehicle')
             return
+
+        self.id = id
         self.vehicle = vehicle
+        self.destination_point = destination_point
+        self.driver_profile = driver_profile
+        self.server_settings = self.driver_profile['servers']
+        self.local_map_settings = self.driver_profile['local_map']
+        self.controller_settings = self.driver_profile['controller']
+        self.subtask_settings = self.driver_profile['subtasks_parameters']
+    
+
         self.world = self.vehicle.get_world()
         self.complete_map = self.world.get_map() 
 
-        self._destination = destinationPoint
-        self.local_map = LocalMap(self.vehicle)
+        # set local map 
+        print(f'vehicle location {self.vehicle.get_location()}')
+        print(f'destination point: {self.destination_point}')
+        self.local_map = self.set_local_map()
 
-        # cognitive servers
-        self.longterm_memory = LongTermMemory(10, server_tick_frequency['longterm_memory'])
-        self.complex_cognition = ComplexCognition(10, server_tick_frequency['complex_cognition'])
-        self.motor_control = MotorControl(10, server_tick_frequency['motor_control'])
+        # set servers cognitive servers
+        self.longterm_memory, self.complex_cognition, self.motor_control = self.set_cognitive_servers()
 
         self.servers = [self.longterm_memory,
-                         self.complex_cognition, 
-                         self.motor_control]
+                        self.complex_cognition, 
+                        self.motor_control]
 
         # cognitive server buffers
         self.retrieval_buffer = []
@@ -43,7 +54,7 @@ class CogModAgent():
         
         # initializing controller with PID parameters for applying vehicle control
         self.init_controller()
-        self.set_destination(self._destination)
+        # self.set_destination(self.destination_point)
 
         # creating subtasks
         self.lane_keeping_task = LaneKeeping(self.local_map)
@@ -53,13 +64,31 @@ class CogModAgent():
         self.subtasks_queue = [self.lane_keeping_task, self.lane_following_task]
 
 
+    def set_local_map(self):
+        local_map = LocalMap(self.vehicle, self.destination_point,
+                             self.local_map_settings['vehicle_tracking_radius'],
+                             self.local_map_settings['global_plan_sampling_resolution'])
+        return local_map
+
+    def set_cognitive_servers(self):
+        longterm_memory = LongTermMemory(self.server_settings['longterm_memory']['queue_length'],
+                                         self.server_settings['longterm_memory']['tick_frequency'],
+                                         self.subtask_settings)
+        complex_cognition = ComplexCognition(self.server_settings['complex_cognition']['queue_length'],
+                                             self.server_settings['complex_cognition']['tick_frequency']) 
+        motor_control = MotorControl(self.server_settings['motor_control']['queue_length'],
+                                     self.server_settings['motor_control']['tick_frequency']) 
+        return longterm_memory, complex_cognition, motor_control  
+
+
     def init_controller(self):
-        self._args_lateral_dict = {'K_P': 1.95, 'K_I': 0.05, 'K_D': 0.2, 'dt': 0.005}
-        self._args_longitudinal_dict = {'K_P': 1.0, 'K_I': 0.05, 'K_D': 0, 'dt': 0.005}
-        self._max_throt = 0.75
-        self._max_brake = 0.3
-        self._max_steer = 0.8
-        self._offset = 0.0
+        self._args_lateral_dict = self.controller_settings['lateral_PID']
+        self._args_longitudinal_dict = self.controller_settings['longitudinal_PID'] 
+        
+        self._max_throt = self.controller_settings['max_throttle']
+        self._max_brake = self.controller_settings['max_brake']
+        self._max_steer = self.controller_settings['max_steering']
+        self._offset = self.controller_settings['offset']
 
         self._vehicle_controller = VehiclePIDController(self.vehicle,
                                                         args_lateral=self._args_lateral_dict,
@@ -79,10 +108,11 @@ class CogModAgent():
     # 4. send ping to subtasks with the updated information from the buffers. (creates requests to servers)
     # 5. process requests from the subtasks
 
-    def update_agent(self):
+    def update_agent(self, global_agent_list):
         # # updating the local map with the current vehicle position
         # # calls the update function of the local map 
-        self.update_local_map()
+        self.update_local_map(global_agent_list)
+
 
         # calls the process_request function of the cognitive servers 
         self.process_request()
@@ -91,8 +121,6 @@ class CogModAgent():
         # the response from the servers. we read the buffers and store 
         # the responses in three separate buffers locally
         response_queue = self.get_response_from_buffers()
-        
-
 
         # get all response for lane keeping subtask
         response_lane_keeping = []
@@ -118,7 +146,9 @@ class CogModAgent():
         if self.motor_control.target_waypoint is not None and self.motor_control.target_velocity  != -1:
             control = self._vehicle_controller.run_step(target_speed=self.motor_control.target_velocity, 
                                                         waypoint=self.motor_control.target_waypoint)
-            self.vehicle.apply_control(control)
+            # self.vehicle.apply_control(control)
+            
+            return control
 
 
 
@@ -196,10 +226,10 @@ class CogModAgent():
         return self.vehicle.get_control()
 
     
-    def set_destination(self, destination):
-        self._destination = destination
-        self.local_map.set_global_plan(self.vehicle.get_transform(), self._destination)
-        pass
+    # def set_destination(self, destination):
+    #     self.destination_point = destination
+    #     self.local_map.set_global_plan(self.vehicle.get_transform(), self.destination_point)
+    #     pass
 
 
     def process_request(self):
@@ -225,8 +255,13 @@ class CogModAgent():
         pass
     
     
-    def update_local_map(self):
-        self.local_map.update_local_map()
+    def update_local_map(self, global_agent_list):
+        other_agents = []
+        for agent in global_agent_list:
+            if agent.id != self.id:
+                other_agents.append(agent)
+
+        self.local_map.update(other_agents)
         pass
 
     def destroy(self):
