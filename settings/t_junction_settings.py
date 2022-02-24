@@ -103,12 +103,12 @@ t_junction_settings = {
         "1": {
             "spawn_point": (12, 13), # 3
             "destination_point": (-49, 12), # 5
-            "driver_profile": driver_profile["driver3"],
+            "driver_profile": driver_profile["DOM"],
         },
         "2": {
             "spawn_point": (-17, 44), # 1
             "destination_point": (12, 16), # 4
-            "driver_profile": driver_profile["driver3"],
+            "driver_profile": driver_profile["DOM"],
         },
     },
     # 1 A to straight to C

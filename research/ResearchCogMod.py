@@ -49,7 +49,51 @@ class ResearchCogMod(BaseResearch):
         self.number_of_agents, self.agent_parameter_list = self.settingsManager.getNumberOfAgentsWithParameters()
         pass
 
+    def onEnd(self):
+        self.destoryActors()
+    
+    def destoryActors(self):
+        for vehicle in self.vehicle_list:
+            vehicle.destroy()
+        self.vehicle_agent_list = []
+        pass
 
+    def destroyAgent(self, agent):
+        self.vehicle_agent_list.remove(agent)
+        self.vehicle_list.remove(agent.vehicle)
+        agent.vehicle.destroy()
+
+    def onTick(self, world_snapshot):
+        if self.simulationMode == SimulationMode.ASYNCHRONOUS:
+            self.updateVehiclesAsynchoronousMode(world_snapshot)
+        if self.simulationMode == SimulationMode.SYNCHRONOUS:
+            self.updateVehiclesSynchoronousMode(world_snapshot)
+
+    #region simulation
+    def run(self, maxTicks=5000):
+        print('inside run research')
+        
+        if self.simulationMode == SimulationMode.ASYNCHRONOUS:
+            self.createVehicleAsynchoronousMode()
+            self.world.wait_for_tick()
+        if self.simulationMode == SimulationMode.SYNCHRONOUS:
+            self.createVehicleSynchoronousMode()
+            self.world.tick()
+        
+        for agent in self.vehicle_agent_list:
+            print(f'agent : {agent}')
+            self.visualizer.trackAgentOnTick(agent)
+
+        onTickers = [self.visualizer.onTick, self.onTick]
+        onEnders = [self.onEnd]
+        self.simulator = Simulator(self.client, onTickers=onTickers, onEnders=onEnders, simulationMode=self.simulationMode)
+
+        self.simulator.run(maxTicks)
+
+        # try: 
+        # except Exception as e:
+        #     self.logger.exception(e)
+        pass
 
 
     def createVehicleAsynchoronousMode(self):       
@@ -82,102 +126,38 @@ class ResearchCogMod(BaseResearch):
 
         pass
 
+    # In the synchronous mode, the spawn command are applied in batch
     def createVehicleSynchoronousMode(self):       
         batch = []
         for i in range(self.number_of_agents):
             spawn_point = self.agent_parameter_list[i]['spawn_point']
-            # destination_point = self.agent_parameter_list[i]['destination_point']
-            # driver_profile = self.agent_parameter_list[i]['driver_profile']
-
-            # spawn the vehicle in the simulator
+            
+            # creating the vehicle spawning command 
             spawn_command = self.vehicleFactory.spawn_command(spawn_point)
             batch.append(spawn_command)
             pass
 
+        # applying all command togather 
         results = self.client.apply_batch_sync(batch, True)
         print(f'results : {results}')
+
         for i in range(len(results)):
-            if results[i].error:
-                exit(f"failed to spawn vehicle {i}")
-                return
-            else:
+            if not results[i].error:
                 print(f"successfully spawn vehicle {results[i].actor_id}")
                 vehicle_actor = self.world.get_actor(results[i].actor_id)
-                self.vehicle_list.append(vehicle_actor)
+                destination_point = self.agent_parameter_list[i]['destination_point']
+                driver_profile = self.agent_parameter_list[i]['driver_profile']
                 vehicleAgent = self.vehicleFactory.createCogModAgent(id=vehicle_actor.id,
                                                                      vehicle=vehicle_actor,
-                                                                     destinationPoint=self.agent_parameter_list[i]['destination_point'],
-                                                                     driver_profile=self.agent_parameter_list[i]['driver_profile'])
-                                                                 
+                                                                     destinationPoint=destination_point,
+                                                                     driver_profile=driver_profile) 
+                
+                self.vehicle_list.append(vehicle_actor)                      
                 self.vehicle_agent_list.append(vehicleAgent)
-
-
-                pass
-        
-
-        # for i in range(len(self.vehicle_list)):
-        #     vehicleAgent = self.vehicleFactory.createCogModAgent(id=self.vehicle_list[i].id,
-        #                                                          vehicle=self.vehicle_list[i],
-        #                                                          destinationPoint=self.agent_parameter_list[i]['destination_point'],
-        #                                                          driver_profile=self.agent_parameter_list[i]['driver_profile'])
-                                                                 
-        #     self.vehicle_agent_list.append(vehicleAgent)
-        #     pass
+            else:
+                exit(f"failed to spawn vehicle {i}")
+                return
         pass
-
-
-   
-
-
-    #region simulation
-    def run(self, maxTicks=5000):
-        print('inside run research')
-        
-        if self.simulationMode == SimulationMode.ASYNCHRONOUS:
-            self.createVehicleAsynchoronousMode()
-            self.world.wait_for_tick()
-        if self.simulationMode == SimulationMode.SYNCHRONOUS:
-            self.createVehicleSynchoronousMode()
-            self.world.tick()
-        
-        for agent in self.vehicle_agent_list:
-            print(f'agent : {agent}')
-            self.visualizer.trackAgentOnTick(agent)
-
-        onTickers = [self.visualizer.onTick, self.onTick]
-        # onTickers = [self.onTick]
-        onEnders = [self.onEnd]
-        self.simulator = Simulator(self.client, onTickers=onTickers, onEnders=onEnders, simulationMode=self.simulationMode)
-
-        # print(time.time)
-        # time.sleep(2)
-        # print(time.time)
-        self.simulator.run(maxTicks)
-
-        # try: 
-        # except Exception as e:
-        #     self.logger.exception(e)
-        pass
-
-
-
-    
-    def onEnd(self):
-        self.destoryActors()
-    
-    def destoryActors(self):
-        for vehicle in self.vehicle_list:
-            vehicle.destroy()
-        self.vehicle_agent_list = []
-        pass
-
-    def onTick(self, world_snapshot):
-        if self.simulationMode == SimulationMode.ASYNCHRONOUS:
-            self.updateVehiclesAsynchoronousMode(world_snapshot)
-        if self.simulationMode == SimulationMode.SYNCHRONOUS:
-            self.updateVehiclesSynchoronousMode(world_snapshot)
-
- 
             
     def updateVehiclesSynchoronousMode(self, world_snapshot):
         batch = []
@@ -195,14 +175,17 @@ class ResearchCogMod(BaseResearch):
                 if control is not None:
                     batch.append(carla.command.ApplyVehicleControl(agent.vehicle.id, control))
 
+        split_index = len(batch)
 
         for agent in agent_to_remove:
             destroy_command = carla.command.DestroyActor(agent.vehicle.id)
             batch.append(destroy_command)
             
         results = self.client.apply_batch_sync(batch, True)
-        for i in range(len(results)):
-            print(f'results : {results[i].actor_id}, {results[i].has_error()}')
+        for i in range(split_index, len(results)):
+            print('destroying agent ')
+            self.destroyAgent(self.vehicle_agent_list[i])
+            pass
         pass
 
 
@@ -222,9 +205,9 @@ class ResearchCogMod(BaseResearch):
                     agent.vehicle.apply_control(control)
 
         for agent in agent_to_remove:
-            self.vehicle_agent_list.remove(agent)
-            self.vehicle_list.remove(agent.vehicle)
-            agent.vehicle.destroy()
+            self.destroyAgent(agent)
             
   
         pass
+
+

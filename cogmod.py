@@ -12,7 +12,7 @@ from research import ResearchFactory, SimulationMode
 def ResearchCogMod(max_ticks):
     research = ResearchFactory.createResearchCogMod(maxTicks=max_ticks, 
                                                     simulationMode=SimulationMode.SYNCHRONOUS, 
-                                                    simulation_id='setting12')
+                                                    simulation_id='setting7')
 
 
 if __name__ == '__main__':

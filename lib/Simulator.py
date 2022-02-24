@@ -53,7 +53,6 @@ class Simulator(ClientUser):
             for i in range(maxTicks):
                 if self.simulationMode == SimulationMode.SYNCHRONOUS:
                     world_snapshot = self.world.tick() # synchronous mode
-                    # print(f'synchronous mode  {world_snapshot}')
                 if self.simulationMode == SimulationMode.ASYNCHRONOUS:
                     world_snapshot = self.world.wait_for_tick() # asynchronous mode 
                 
