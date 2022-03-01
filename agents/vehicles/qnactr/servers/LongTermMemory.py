@@ -11,7 +11,7 @@ class LongTermMemory(BaseCognitiveServer):
         super().__init__(queue_length, frequency)
         self.tick_counter = 0
         if subtasks_parameters is None:
-            selfsubtasks_parameters = {
+            self.subtasks_parameters = {
                 'subtasks_parameters': {
                     'lane_following': {
                         'desired_velocity': 3.5 , # m/s

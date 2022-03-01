@@ -1,18 +1,7 @@
 from abc import ABC, abstractmethod
 
 from enum import Enum
-
-class RequestType(Enum):
-    MEMORY_ACCESS = 1
-    MOTOR_CONTROL = 2
-    COGNITIVE_PROCESS = 3
-
-class ServerType(Enum):
-    MOTOR_CONTROL = 1
-    COMPLEX_COGNITION = 2
-    LONGTERM_MEMORY = 3
-    pass
-
+from ..qnactr_enum import SubtaskType
 
 class BaseCognitiveServer(ABC):
     def __init__(self, queue_length=10, frequency=5):
@@ -47,6 +36,19 @@ class BaseCognitiveServer(ABC):
 
     def reset_response_queue(self):
         self.response_queue = []
+        pass
+
+
+    def print_request_queue_stats(self):
+        lane_keeping_request_count = 0
+        lane_following_request_count = 0
+        for request in self.request_queue:
+            if request.sender == SubtaskType.LANEFOLLOWING:
+                lane_following_request_count += 1
+            if request.sender == SubtaskType.LANEKEEPING:
+                lane_keeping_request_count += 1
+        print(f'lane_following_request_count: {lane_following_request_count}')
+        print(f'lane_keeping_request_count: {lane_keeping_request_count}')
         pass
 
 

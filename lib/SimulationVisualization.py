@@ -31,7 +31,6 @@ class SimulationVisualization(ClientUser):
         if agent is None:
             return
         self.trackingAgent[agent.vehicle.id] = agent
-        # print(f"tracking agent  ++++++++++++++++++{agent.vehicle.id}")
 
 
     # def onTick(self, world_snapshot):

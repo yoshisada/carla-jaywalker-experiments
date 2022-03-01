@@ -22,6 +22,7 @@ class ComplexCognition(BaseCognitiveServer):
 
     def process_request(self):
 
+        self.print_request_queue_stats()
         self.tick_counter += 1
         if self.tick_counter % self.frequency == 0:
 
@@ -48,7 +49,6 @@ class ComplexCognition(BaseCognitiveServer):
 
     def get_next_velocity(self, curRequest):
 
-        # print(f'get_next_velocity() ================================')
         localMap = curRequest.data['local_map']
         idm_parameters = curRequest.data['idm_parameters']
 
@@ -84,7 +84,7 @@ class ComplexCognition(BaseCognitiveServer):
                 next_waypoint = wp
                 break
         if next_waypoint is None and len(localMap.global_plan) > 0:
-            print('not enough waypoints in the global plan so sending the last waypoint')
+            # print('not enough waypoints in the global plan so sending the last waypoint')
             next_waypoint = localMap.global_plan[-1][0]
 
         return next_waypoint

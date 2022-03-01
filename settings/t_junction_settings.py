@@ -41,7 +41,7 @@ t_junction_settings = {
         "1": {
             "spawn_point": (12, 13), # 3
             "destination_point": (-49, 12), # 5
-            "driver_profile": driver_profile["DOM"],
+            "driver_profile": driver_profile["slow_driver"],
         },
     },
 
@@ -155,7 +155,7 @@ t_junction_settings = {
         "2": {
             "spawn_point": (-17, 30), # 3
             "destination_point": (-49, 12), # 2
-            "driver_profile": driver_profile["driver1"],
+            "driver_profile": driver_profile["slow_driver"],
         },
 
     },
@@ -184,12 +184,12 @@ t_junction_settings = {
         "1": {
             "spawn_point": (12, 13), # 3
             "destination_point": (-49, 12), # 5
-            "driver_profile": driver_profile["driver3"],
+            "driver_profile": driver_profile["driver1"],
         },
         "2": {
             "spawn_point": (0, 13), # 3 (ahead)
             "destination_point": (-49, 12), # 5
-            "driver_profile": driver_profile["driver1"],
+            "driver_profile": driver_profile["slow_driver"],
         },
     },
 

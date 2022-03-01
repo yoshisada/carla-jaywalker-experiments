@@ -3,25 +3,8 @@
 from enum import Enum
 
 from agents.vehicles.qnactr.Request import Request
-from agents.vehicles.qnactr.servers.BaseCognitiveServer import RequestType, ServerType
+from ..qnactr_enum import ServerType, SubtaskState, SubtaskType
 
-
-class SubtaskState(Enum):
-    """
-    The state of the subtask.
-    """
-    ACTIVE = 0
-    HALT = 1
-
-    pass
-
-class SubtaskType(Enum):
-    LANEKEEPING = 0
-    LANEFOLLOWING = 1
-    HAZARD_DETECTION = 2
-    INTERSECTION_CROSSING = 3
-    REQULATORY = 4
-    pass
 
 
 # Lane keeping subtask is used to keep the vehicle on the lane.
@@ -114,7 +97,6 @@ class LaneKeeping():
             pass
 
         if self.local_memory['next_waypoint'] is not None \
-            and self.local_memory['far_distance'] is not -1 \
                 and self.subtask_state is SubtaskState.HALT:
             # print(f'all data available')
             request = Request(SubtaskType.LANEKEEPING, ServerType.MOTOR_CONTROL, {'target_waypoint': self.local_memory['next_waypoint']})
@@ -137,7 +119,8 @@ class LaneKeeping():
                               ServerType.COMPLEX_COGNITION, 
                               {'far_distance': self.local_memory['far_distance'], 'local_map': self.local_map})
             self.request_queue.append(request)
-            self.subtask_state = SubtaskState.HALT
+            # self.subtask_state = SubtaskState.HALT
+            self.local_memory['far_distance'] = -1
             pass
         pass
 

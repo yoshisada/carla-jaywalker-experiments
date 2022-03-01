@@ -3,10 +3,10 @@
 
 
 from agents.vehicles.qnactr.Request import Request
-from agents.vehicles.qnactr.servers.BaseCognitiveServer import ServerType
-# from agents.vehicles.qnactr.subtasks.IDM import IDM
-from agents.vehicles.qnactr.subtasks.LaneKeeping import SubtaskState, SubtaskType
-
+# from agents.vehicles.qnactr.servers.BaseCognitiveServer import ServerType
+from ..qnactr_enum import ServerType
+# from agents.vehicles.qnactr.subtasks.LaneKeeping import SubtaskState, SubtaskType
+from ..qnactr_enum import SubtaskState, SubtaskType
 
 class LaneFollow():
     def __init__(self, localMap):
@@ -68,8 +68,7 @@ class LaneFollow():
                 self.local_memory['next_velocity'] = response.data['next_velocity']
                 pass
         
-        if self.local_memory['idm_parameters'] is not None \
-            and self.local_memory['next_velocity'] is not -1 \
+        if self.local_memory['next_velocity'] is not -1 \
                 and self.subtask_state is SubtaskState.HALT:
             # print('everyting in place... sending request to motor control')
             request = Request(SubtaskType.LANEFOLLOWING, ServerType.MOTOR_CONTROL, {'target_velocity': self.local_memory['next_velocity']})
@@ -93,7 +92,8 @@ class LaneFollow():
                               ServerType.COMPLEX_COGNITION, 
                               {'idm_parameters': self.local_memory['idm_parameters'], 'local_map': self.local_map})
             self.request_queue.append(request)
-            self.subtask_state = SubtaskState.HALT
+            # self.subtask_state = SubtaskState.HALT
+            self.local_memory['idm_parameters'] = None
             pass
         pass
 

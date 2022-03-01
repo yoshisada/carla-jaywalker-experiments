@@ -2,13 +2,14 @@ import carla
 from agents.navigation.controller import VehiclePIDController
 from agents.vehicles.qnactr.Request import Request
 from agents.vehicles.qnactr.map.LocalMap import LocalMap
-from agents.vehicles.qnactr.servers.BaseCognitiveServer import ServerType
+
+
 from agents.vehicles.qnactr.servers.LongTermMemory import LongTermMemory
 from agents.vehicles.qnactr.servers.ComplexCognition import ComplexCognition
 from agents.vehicles.qnactr.servers.MotorControl import MotorControl
 from agents.vehicles.qnactr.subtasks.LaneFollow import LaneFollow
-from agents.vehicles.qnactr.subtasks.LaneKeeping import LaneKeeping, SubtaskType
-
+from agents.vehicles.qnactr.subtasks.LaneKeeping import LaneKeeping
+from .qnactr_enum import SubtaskType, ServerType
 
 
 
@@ -219,6 +220,8 @@ class CogModAgent():
             req = subtask.get_request()
             for request in req:
                 ret.append(request)
+        for request in ret:
+            print(str(request))
         return ret
 
 

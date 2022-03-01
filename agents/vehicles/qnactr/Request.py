@@ -8,7 +8,7 @@ class Request():
         pass
 
     def __str__(self):
-        return "Request: s:" + str(self.sender) + " r:" + str(self.receiver) + " data:" + str(self.data)
+        return "\nsender: " + str(self.sender) + " requested: " + str(self.data.keys())  + " receiver: " + str(self.receiver) 
 
     # after processing a request the processed data is sent back to the 
     # sender by modifying the request (swapping sender and receiver, change request type)

@@ -69,6 +69,16 @@ class ResearchCogMod(BaseResearch):
         if self.simulationMode == SimulationMode.SYNCHRONOUS:
             self.updateVehiclesSynchoronousMode(world_snapshot)
 
+        for agent in self.vehicle_agent_list:
+            print(f'agent : {agent.vehicle.id}, lm {len(agent.longterm_memory.request_queue)}, cc {len(agent.complex_cognition.request_queue)}, mc {len(agent.motor_control.request_queue)}')
+            # print(f'lm {len(agent.longterm_memory.request_queue)}')
+            # print(f'cc {len(agent.complex_cognition.request_queue)}')
+            # print(f'mc {len(agent.motor_control.request_queue)}')
+
+        
+
+
+
     #region simulation
     def run(self, maxTicks=5000):
         print('inside run research')
@@ -183,7 +193,7 @@ class ResearchCogMod(BaseResearch):
             
         results = self.client.apply_batch_sync(batch, True)
         for i in range(split_index, len(results)):
-            print('destroying agent ')
+            print('destroy agent ')
             self.destroyAgent(self.vehicle_agent_list[i])
             pass
         pass

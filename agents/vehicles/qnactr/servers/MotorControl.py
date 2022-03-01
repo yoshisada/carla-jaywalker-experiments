@@ -1,7 +1,7 @@
 
 
 from agents.vehicles.qnactr.servers.BaseCognitiveServer import BaseCognitiveServer
-from agents.vehicles.qnactr.servers.BaseCognitiveServer import RequestType
+# from .._enum import RequestType
 
 class MotorControl(BaseCognitiveServer):
     def __init__(self, queue_length=10, frequency=2):
