@@ -37,7 +37,7 @@ driver_profile = {
     'driver2': {
         'servers': {
             'longterm_memory': {'queue_length': 10, 'tick_frequency': 10,},
-            'complex_cognition': {'queue_length': 100, 'tick_frequency': 2,},
+            'complex_cognition': {'queue_length': 100, 'tick_frequency': 10,},
             'motor_control': {'queue_length': 10, 'tick_frequency': 1,},
         },
         'local_map': {
@@ -174,8 +174,8 @@ driver_profile = {
 
     'slow_driver': {
         'servers': {
-            'longterm_memory': {'queue_length': 1, 'tick_frequency': 15,},
-            'complex_cognition': {'queue_length': 1, 'tick_frequency': 15,},
+            'longterm_memory': {'queue_length': 1, 'tick_frequency': 10,},
+            'complex_cognition': {'queue_length': 1, 'tick_frequency': 10,},
             'motor_control': {'queue_length': 10, 'tick_frequency': 1,},
         },
         'local_map': {

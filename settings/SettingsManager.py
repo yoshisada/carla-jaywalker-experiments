@@ -22,8 +22,8 @@ class SettingsManager(ClientUser):
 
     def load(self, settingsId):
         self.currentSetting = self.settingsDict[settingsId]
-        self._walkerSettings = None
-        self._walkerTransforms = None
+        # self._walkerSettings = None
+        # self._walkerTransforms = None
 
     def _assertCurrentSetting(self):
         if self.currentSetting is None:
@@ -118,12 +118,13 @@ class SettingsManager(ClientUser):
 
         return (numberOfVehicles, spawnPoints_transforms, destinationPoints_transforms)
 
-    def getNumberOfAgentsWithParameters(self):
-        numberOfAgents = self.currentSetting["number_of_agents"]
-
+    def getNumberOfCogmodAgentsWithParameters(self):
+        cogmod_agent_settings = self.currentSetting["cogmod_agents"]
+        numberOfAgents = cogmod_agent_settings["number_of_cogmod_agents"]
+        
         agent_parameter_list = []
         for i in range(1, numberOfAgents+1):
-            current_setting = self.currentSetting[str(i)]
+            current_setting = cogmod_agent_settings[str(i)]
 
             spawn_coordinate = current_setting["spawn_point"]
             destination_coordinate = current_setting["destination_point"]
@@ -141,6 +142,25 @@ class SettingsManager(ClientUser):
             
         # print(agent_parameter_list)
         return (numberOfAgents, agent_parameter_list) 
+
+    def getNumberOfActorAgentsWithTrajectories(self):
+        actor_agent_settings = self.currentSetting["actor_agents"]
+        numberOfAgents = actor_agent_settings["number_of_actor_agents"]
+        
+        actor_trajectory_list = []
+        for i in range (1, numberOfAgents+1):
+            current_setting = actor_agent_settings[str(i)]
+            trajectory = current_setting["trajectory"]
+            trajectory_transforms = []
+            for coordinate, time in trajectory:
+                # print(coordinate, time)
+                point_to_location = self._pointToLocation(coordinate)
+                location_to_transform = self._locationToVehicleSpawnPoint(point_to_location)
+                trajectory_transforms.append((location_to_transform, time))
+            actor_trajectory_list.append(trajectory_transforms)
+            pass
+        
+        return (numberOfAgents, actor_trajectory_list)
 
     
 

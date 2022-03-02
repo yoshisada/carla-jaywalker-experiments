@@ -6,7 +6,9 @@ import logging
 from agents.navigation.behavior_agent import BehaviorAgent  # pylint: disable=import-error
 from agents.navigation.basic_agent import BasicAgent  # pylint: disable=import-error
 from agents.vehicles.qnactr.CogMod import CogModAgent  # cogmod agent 
+from .qnactr.TrajectoryFollower import TrajectoryFollower  # trajectory follower actor agent
 from lib import LoggerFactory, ClientUser
+
 
 
 from lib import LoggerFactory
@@ -46,7 +48,9 @@ class VehicleFactory(ClientUser):
         # VehicleFactory.vehicles.append(vehicle)
         return spawn_command
 
-    
+    def createActorAgent(self, id, vehicle, trajectory):
+        agent = TrajectoryFollower(id, vehicle, trajectory)
+        return agent
 
     
     def createAgent(self, vehicle: carla.Vehicle, target_speed=20, logLevel=logging.INFO) -> BasicAgent:

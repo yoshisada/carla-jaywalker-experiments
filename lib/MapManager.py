@@ -10,6 +10,8 @@ from .ClientUser import ClientUser
 class MapNames(Enum):
     circle_t_junctions = 'circle_t_junctions'
     t_junction = 't_junction'
+    straight_parking = 'straight'
+
 
 
 class MapManager(ClientUser):
