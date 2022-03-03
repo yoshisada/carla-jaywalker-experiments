@@ -15,14 +15,14 @@ from .trajctory_follower_settings import trajectory_follower_settings
 
 scenario_settings = {
     "cogmod_agent": {
-        "spawn_point": (),
-        "destination": (),
+        "spawn_point": (-55, 8),
+        "destination": (150, 8),
         "target_speed": 30.0,
         "driver_profile": driver_profile["DOM"],
     },
     'actor_agent': {
-        "spawn_point": (),
-        "destination_point": (),
+        "spawn_point": (3, 8),
+        "destination_point": (150, 8),
         "target_speed": 20.0,
     },
     'trigger_distance': 20
