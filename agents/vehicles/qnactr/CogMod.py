@@ -11,9 +11,10 @@ from agents.vehicles.qnactr.subtasks.LaneFollow import LaneFollow
 from agents.vehicles.qnactr.subtasks.LaneKeeping import LaneKeeping
 from .qnactr_enum import SubtaskType, ServerType
 
+from ...Agent import Agent
 
 
-class CogModAgent():
+class CogModAgent(Agent):
     def __init__(self, id, vehicle, destination_point, driver_profile):
         if vehicle is None:
             raise ValueError('need to have vehicle')
@@ -33,8 +34,8 @@ class CogModAgent():
         self.complete_map = self.world.get_map() 
 
         # set local map 
-        print(f'vehicle location {self.vehicle.get_location()}')
-        print(f'destination point: {self.destination_point}')
+        # print(f'vehicle location {self.vehicle.get_location()}')
+        # print(f'destination point: {self.destination_point}')
         self.local_map = self.set_local_map()
 
         # set servers cognitive servers
@@ -63,7 +64,11 @@ class CogModAgent():
 
 
         self.subtasks_queue = [self.lane_keeping_task, self.lane_following_task]
+        pass
 
+
+    def get_vehicle(self):
+        return self.vehicle
 
     def set_local_map(self):
         local_map = LocalMap(self.vehicle, self.destination_point,
@@ -220,8 +225,8 @@ class CogModAgent():
             req = subtask.get_request()
             for request in req:
                 ret.append(request)
-        for request in ret:
-            print(str(request))
+        # for request in ret:
+        #     print(str(request))
         return ret
 
 
@@ -261,7 +266,7 @@ class CogModAgent():
     def update_local_map(self, global_agent_list):
         other_agents = []
         for agent in global_agent_list:
-            if agent.id != self.id:
+            if agent.get_vehicle().id != self.vehicle.id:
                 other_agents.append(agent)
 
         self.local_map.update(other_agents)
@@ -274,7 +279,9 @@ class CogModAgent():
     def is_done(self):
         return self.local_map.is_done()
 
-
+    def get_global_plan(self):
+        return self.local_map.get_global_plan()
+        pass
 
     
 

@@ -127,11 +127,11 @@ class LocalMap():
 
         min_distance = 9999
         for agent in follow_agent:
-            distance = self.vehicle.get_location().distance(agent.vehicle.get_location())
+            distance = self.vehicle.get_location().distance(agent.get_vehicle().get_location())
             if distance < min_distance:
                 min_distance = distance
-                self.vehicle_at_front = agent.vehicle
-                # print('setting vehuicle at front ')
+                self.vehicle_at_front = agent.get_vehicle()
+                print('setting vehicle at front')
                 pass
 
 
@@ -151,19 +151,35 @@ class LocalMap():
         #     pass
 
 
+    # the idea of detecting intersection:
+        # is intersection check what is the intersecting point between two global plans
+        # if the intersection is a point then the 
+        # global plan intersect in exactly one point 
+        # the intersection type is a crossing in that case 
+
     def set_interaction_type(self, agent):
-        agent_global_plan = agent.local_map.get_global_plan()
+        agent_global_plan = agent.get_global_plan()
         intersection = GeometryHelper.is_intersecting(self.global_plan, agent_global_plan)
+        print(f'intersection: {len(intersection)}')
         if intersection.type == 'LineString':
             return InteractionType.NONCONFLICT
         if intersection.type == 'Point':
             return InteractionType.CROSS
         if intersection.type == 'MultiLineString':
-            if agent.local_map.road_list[0] == self.road_list[0]:
-                return InteractionType.FOLLOW
-            else:
-                return InteractionType.MERGE
-        print(f'intersection {intersection.type}')
+            return InteractionType.FOLLOW
+        if intersection.type == 'GeometryCollection':
+            geom_list = list(intersection)
+            for geom in geom_list:
+                print(f'intersection type: {geom}')
+
+
+            # if agent.local_map.road_list[0] == self.road_list[0]:
+            #     return InteractionType.FOLLOW
+            # else:
+            #     return InteractionType.MERGE
+
+        
+        # print(f'intersection {intersection.type}')
         
         
         pass
@@ -171,17 +187,21 @@ class LocalMap():
 
 
 
-    def append_new_agents_inside_tracking_radius(self, global_agent_list):
+    def  append_new_agents_inside_tracking_radius(self, global_agent_list):
         # all_vehicle_from_world = self.world.get_actors().filter('vehicle.*')
         other_agent_from_world = global_agent_list
         # self.tracked_vehicles = []
+        # print(f'inside append new agents {global_agent_list}')
         for agent in other_agent_from_world:
-            distance = self.vehicle.get_location().distance(agent.vehicle.get_location())
+            distance = self.vehicle.get_location().distance(agent.get_vehicle().get_location())
+            # print(f'distance {distance}, tracking radius {self.vehicle_tracking_radius}')
+            # print(f'tracked agents {self.tracked_agents}')
             if distance > self.vehicle_tracking_radius:
                 continue
             else:
                 if agent not in self.tracked_agents.keys():
-                    self.tracked_agents[agent] = self.set_interaction_type(agent)
+                    # self.tracked_agents[agent] = self.set_interaction_type(agent)
+                    self.tracked_agents[agent] = InteractionType.FOLLOW
                     pass
                 pass
         pass
@@ -190,7 +210,7 @@ class LocalMap():
         copy_tracked_vehicles = self.tracked_agents.copy()
         
         for agent, interaction_type in copy_tracked_vehicles.items():
-            distance = self.vehicle.get_location().distance(agent.vehicle.get_location())
+            distance = self.vehicle.get_location().distance(agent.get_vehicle().get_location())
             if distance > self.vehicle_tracking_radius:
                 del self.tracked_agents[agent]
                 pass

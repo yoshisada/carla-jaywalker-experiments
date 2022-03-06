@@ -6,6 +6,7 @@ from lib import ClientUser, LoggerFactory, MapManager, MapNames, SimulationVisua
 from research import *
 from research.SimulationMode import SimulationMode
 from research.ResearchCogMod import ResearchCogMod
+from research.ResearchStraightRoadSimulation import ResearchStraightRoadSimulation
 
 class ResearchFactory:
     def __init__(self, host="127.0.0.1", port=2000, output_dir="logs", map=MapNames.circle_t_junctions) -> None:
@@ -45,3 +46,23 @@ class ResearchFactory:
         client = Utils.createClient(logger, host, port)
         research = ResearchCogMod(client, defaultLogLevel, output_dir, simulationMode, simulation_id)
         research.run(maxTicks=maxTicks)
+
+    @staticmethod
+    def createStraightRoadSimulation(maxTicks=100, 
+                                     host="127.0.0.1", 
+                                     port=2000, 
+                                     defaultLogLevel=logging.INFO, 
+                                     output_dir="logs", 
+                                     map=MapNames.straight_road_with_parking, 
+                                     simulationMode=SimulationMode.ASYNCHRONOUS,
+                                     simulation_id='setting1'):
+
+        print(f"research chosen : StraightRoadSimulation with host: {host}, port: {port}, log level: {defaultLogLevel}, output directory: {output_dir}")
+        port = int(port)
+        name = "createStraightRoadSimulation"
+        logPath = os.path.join(output_dir, f"{name}.log")
+        logger = LoggerFactory.getBaseLogger(name, defaultLevel=defaultLogLevel, file=logPath)
+        client = Utils.createClient(logger, host, port)
+        research = ResearchStraightRoadSimulation(client, map, defaultLogLevel, output_dir, simulationMode, simulation_id)
+        research.run(maxTicks=maxTicks)
+    

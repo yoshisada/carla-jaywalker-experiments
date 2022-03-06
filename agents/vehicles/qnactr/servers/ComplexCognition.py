@@ -22,7 +22,7 @@ class ComplexCognition(BaseCognitiveServer):
 
     def process_request(self):
 
-        self.print_request_queue_stats()
+        # self.print_request_queue_stats()
         self.tick_counter += 1
         if self.tick_counter % self.frequency == 0:
 

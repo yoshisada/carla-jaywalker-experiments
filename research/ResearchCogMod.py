@@ -16,16 +16,16 @@ from .SimulationMode import SimulationMode
 
 class ResearchCogMod(BaseResearch):
 
-    def __init__(self, client: carla.Client, 
-                 logLevel, 
-                 outputDir:str = "logs", 
+    def __init__(self, client: carla.Client,
+                 logLevel,
+                 outputDir:str = "logs",
                  simulationMode = SimulationMode.ASYNCHRONOUS,
                  simulation_id = "setting1"):
         self.name = "Research CogMod"
-        super().__init__(name=self.name, 
-                         client=client, 
-                         mapName=MapNames.straight_road_with_parking, 
-                         logLevel=logLevel, 
+        super().__init__(name=self.name,
+                         client=client,
+                         mapName=MapNames.straight_road_with_parking,
+                         logLevel=logLevel,
                          outputDir=outputDir,
                          simulationMode=simulationMode)
 
@@ -44,7 +44,7 @@ class ResearchCogMod(BaseResearch):
 
         self.cogmod_agent_parameter_list = []
         self.actor_trajectory_list = []
-        
+
         self.setup()
 
 
@@ -53,9 +53,9 @@ class ResearchCogMod(BaseResearch):
         self.simulator = None # populated when run
         self.number_of_cogmod_agents, self.cogmod_agent_parameter_list = self.settingsManager.getNumberOfCogmodAgentsWithParameters()
         self.number_of_actor_agents, self.actor_trajectory_list = self.settingsManager.getNumberOfActorAgentsWithTrajectories()
-        
 
-        self.visualizer.drawSpawnPoints()
+
+        # self.visualizer.drawSpawnPoints()
 
         # unique_lanes = {}
         # for wp in self.mapManager.waypoints:
@@ -67,7 +67,7 @@ class ResearchCogMod(BaseResearch):
 
     def onEnd(self):
         self.destoryActors()
-    
+
     def destoryActors(self):
         for vehicle in self.vehicle_list:
             vehicle.destroy()
@@ -91,15 +91,15 @@ class ResearchCogMod(BaseResearch):
             # print(f'cc {len(agent.complex_cognition.request_queue)}')
             # print(f'mc {len(agent.motor_control.request_queue)}')
 
-        
+
 
 
 
     #region simulation
     def run(self, maxTicks=5000):
         print('inside run research')
-        
-        
+
+
         # if self.simulationMode == SimulationMode.ASYNCHRONOUS:
         #     self.createCogmodAgentAsynchronousMode()
         #     self.createActorAgentsAsynchronousMode()
@@ -108,7 +108,7 @@ class ResearchCogMod(BaseResearch):
         #     self.createCogmodAgentSynchronousMode()
         #     # self.createActorAgentsSynchronousMode()
         #     self.world.tick()
-        
+
         # for agent in self.cogmod_agent_list:
         #     print(f'agent : {agent}')
         #     self.visualizer.trackAgentOnTick(agent)
@@ -119,7 +119,7 @@ class ResearchCogMod(BaseResearch):
 
         # self.simulator.run(maxTicks)
 
-        # # try: 
+        # # try:
         # # except Exception as e:
         # #     self.logger.exception(e)
         # pass
@@ -139,21 +139,21 @@ class ResearchCogMod(BaseResearch):
             self.vehicle_list.append(vehicle)
 
             actor_agent = self.vehicleFactory.createActorAgent(id=len(self.vehicle_list),
-                                                               vehicle=vehicle, 
+                                                               vehicle=vehicle,
                                                                trajectory=trajectory)
             self.actor_agent_list.append(actor_agent)
             pass
         pass
 
-    
 
-    def createCogmodAgentAsynchronousMode(self):       
+
+    def createCogmodAgentAsynchronousMode(self):
 
         for i in range(self.number_of_cogmod_agents):
             spawn_point = self.cogmod_agent_parameter_list[i]['spawn_point']
             destination_point = self.cogmod_agent_parameter_list[i]['destination_point']
             driver_profile = self.cogmod_agent_parameter_list[i]['driver_profile']
-           
+
             # spawn the vehicle in the simulator
             vehicle = self.vehicleFactory.spawn(spawn_point)
             if vehicle is None:
@@ -162,7 +162,7 @@ class ResearchCogMod(BaseResearch):
                 return
             else:
                 self.logger.info(f"successfully spawn vehicle {vehicle.id} at {spawn_point.location.x, spawn_point.location.y, spawn_point.location.z}")
-            
+
 
             self.vehicle_list.append(vehicle)
 
@@ -171,7 +171,7 @@ class ResearchCogMod(BaseResearch):
                                                                  vehicle=vehicle,
                                                                  destinationPoint=destination_point,
                                                                  driver_profile=driver_profile)
-                                                                 
+
             self.cogmod_agent_list.append(vehicleAgent)
             pass
 
@@ -205,17 +205,17 @@ class ResearchCogMod(BaseResearch):
         pass
 
     # In the synchronous mode, the spawn command are applied in batch
-    def createCogmodAgentSynchronousMode(self):       
+    def createCogmodAgentSynchronousMode(self):
         batch = []
         for i in range(self.number_of_cogmod_agents):
             spawn_point = self.cogmod_agent_parameter_list[i]['spawn_point']
-            
-            # creating the vehicle spawning command 
+
+            # creating the vehicle spawning command
             spawn_command = self.vehicleFactory.spawn_command(spawn_point)
             batch.append(spawn_command)
             pass
 
-        # applying all command togather 
+        # applying all command togather
         results = self.client.apply_batch_sync(batch, True)
         # print(f'results : {results}')
 
@@ -228,15 +228,15 @@ class ResearchCogMod(BaseResearch):
                 vehicleAgent = self.vehicleFactory.createCogModAgent(id=vehicle_actor.id,
                                                                      vehicle=vehicle_actor,
                                                                      destinationPoint=destination_point,
-                                                                     driver_profile=driver_profile) 
-                
-                self.vehicle_list.append(vehicle_actor)                      
+                                                                     driver_profile=driver_profile)
+
+                self.vehicle_list.append(vehicle_actor)
                 self.cogmod_agent_list.append(vehicleAgent)
             else:
                 exit(f"failed to spawn vehicle {i}")
                 return
         pass
-            
+
     def updateVehiclesSynchoronousMode(self, world_snapshot):
         batch = []
         if len(self.vehicle_list) == 0:
@@ -258,7 +258,7 @@ class ResearchCogMod(BaseResearch):
         for agent in agent_to_remove:
             destroy_command = carla.command.DestroyActor(agent.vehicle.id)
             batch.append(destroy_command)
-            
+
         results = self.client.apply_batch_sync(batch, True)
         for i in range(split_index, len(results)):
             print('destroy agent ')
@@ -284,8 +284,6 @@ class ResearchCogMod(BaseResearch):
 
         for agent in agent_to_remove:
             self.destroyAgent(agent)
-            
-  
+
+
         pass
-
-

@@ -12,6 +12,7 @@ It can also make use of the global route planner to follow a specifed route
 import carla
 from enum import Enum
 from shapely.geometry import Polygon
+from agents.Agent import Agent
 
 from agents.navigation.local_planner import LocalPlanner
 from agents.navigation.global_route_planner import GlobalRoutePlanner
@@ -19,7 +20,7 @@ from agents.tools.misc import get_speed, is_within_distance, get_trafficlight_tr
 from lib import Utils, LoggerFactory
 
 
-class BasicAgent(object):
+class BasicAgent(Agent):
     """
     BasicAgent implements an agent that navigates the scene.
     This agent respects traffic lights and other vehicles, but ignores stop signs.
@@ -77,6 +78,11 @@ class BasicAgent(object):
         if "debug" in opt_dict:
             self.debug = opt_dict['debug']
 
+    def get_vehicle(self):
+        return self._vehicle
+
+    def get_global_plan(self):
+        return self._local_planner._waypoints_queue
 
     def add_emergency_stop(self, control):
         """

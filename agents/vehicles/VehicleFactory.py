@@ -42,7 +42,7 @@ class VehicleFactory(ClientUser):
 
     
     def createAgent(self, vehicle: carla.Vehicle, target_speed=20, logLevel=logging.INFO) -> BasicAgent:
-        agent = BasicAgent(vehicle, target_speed=20, opt_dict={"debug": True})
+        agent = BasicAgent(vehicle, target_speed=target_speed, opt_dict={"debug": True})
         return agent
 
     def createBehaviorAgent(self, vehicle: carla.Vehicle, behavior="normal", logLevel=logging.INFO) -> BehaviorAgent:
@@ -55,9 +55,9 @@ class VehicleFactory(ClientUser):
         spawn_command = carla.command.SpawnActor(vehicleBp, spawnPoint)
         return spawn_command
     
-    def createActorAgent(self, id, vehicle, trajectory):
-        agent = TrajectoryFollower(id, vehicle, trajectory)
-        return agent
+    # def createActorAgent(self, id, vehicle, trajectory):
+    #     agent = TrajectoryFollower(id, vehicle, trajectory)
+    #     return agent
 
     def createCogModAgent(self, id, vehicle, destinationPoint, driver_profile):
         agent = CogModAgent(id, vehicle, destinationPoint, driver_profile)

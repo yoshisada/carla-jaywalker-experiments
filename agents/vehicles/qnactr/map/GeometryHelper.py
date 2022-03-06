@@ -8,7 +8,7 @@ class GeometryHelper():
         coordinate_2D = []
         for wp, _ in global_plan:
             location = wp.transform.location
-            coordinate_2D.append((location.x, location.y))
+            coordinate_2D.append((round(location.x, 2), round(location.y, 2)))
             pass
         return LineString(coordinate_2D)
         pass
@@ -22,6 +22,8 @@ class GeometryHelper():
 
     @staticmethod
     def find_intersection_between_two_linestrings(line1, line2):
+        print(f'line string 1 {line1}')
+        print(f'line string 2 {line2}')
         intersection = line1.intersection(line2)
         return intersection 
 

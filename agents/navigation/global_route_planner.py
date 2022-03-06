@@ -40,6 +40,13 @@ class GlobalRoutePlanner(object):
         self._find_loose_ends()
         self._lane_change_link()
 
+        # self.logger.info(f'topology {self._topology}')
+        # self.logger.info(f'graph {self._graph}')
+        # self.logger.info(f'id_map {self._id_map}')
+        # self.logger.info(f'road_id_to_edge {self._road_id_to_edge}')
+
+
+
     def trace_route(self, origin, destination):
         """
         This method returns list of (carla.Waypoint, RoadOption)
