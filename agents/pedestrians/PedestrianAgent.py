@@ -101,7 +101,9 @@ class PedestrianAgent(InfoAgent):
 
     def addError(self, TTC):
         # TODO better modeling than a noise, error = f(distance, speed, occlusions, etc)"
-        noiseFactor = np.random.uniform(0.8, 1.2)
+        # noiseFactor = np.random.uniform(0.8, 1.2) NOISE CANNOT BE RANDOM
+        noiseFactor = self._localPlanner.getInternalFactor("TG_multiplier")
+
         return TTC * noiseFactor # TODO error modeling in Gap
 
     
@@ -206,8 +208,6 @@ class PedestrianAgent(InfoAgent):
         
  
         location = self.feetLocation
-        direction = self._localPlanner.getDesiredDirection()
-        self.visualizer.drawDirection(location, direction, life_time=0.1)
         # speed = self.calculateNextSpeed(direction)
 
 
@@ -216,6 +216,9 @@ class PedestrianAgent(InfoAgent):
             return self._localPlanner.getStopControl()
 
         control = self._localPlanner.calculateNextControl()
+
+        direction = control.direction
+        self.visualizer.drawDirection(location, direction, life_time=0.1)
 
         self.visualizeConflictPoint()
         self.visualiseState()

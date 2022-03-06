@@ -16,16 +16,17 @@ from .SimulationMode import SimulationMode
 
 class ResearchCogMod(BaseResearch):
 
-    def __init__(self, client: carla.Client,
-                 logLevel,
-                 outputDir:str = "logs",
+    def __init__(self, client: carla.Client, 
+                 logLevel, 
+                 mapName=MapNames.t_junction, 
+                 outputDir:str = "logs", 
                  simulationMode = SimulationMode.ASYNCHRONOUS,
                  simulation_id = "setting1"):
         self.name = "Research CogMod"
-        super().__init__(name=self.name,
-                         client=client,
-                         mapName=MapNames.straight_road_with_parking,
-                         logLevel=logLevel,
+        super().__init__(name=self.name, 
+                         client=client, 
+                         mapName=mapName, 
+                         logLevel=logLevel, 
                          outputDir=outputDir,
                          simulationMode=simulationMode)
 
@@ -113,11 +114,11 @@ class ResearchCogMod(BaseResearch):
         #     print(f'agent : {agent}')
         #     self.visualizer.trackAgentOnTick(agent)
 
-        # onTickers = [self.visualizer.onTick, self.onTick]
-        # onEnders = [self.onEnd]
-        # self.simulator = Simulator(self.client, onTickers=onTickers, onEnders=onEnders, simulationMode=self.simulationMode)
+        onTickers = [self.visualizer.onTick, self.onTick]
+        onEnders = [self.onEnd]
+        self.simulator = Simulator(self.client, onTickers=onTickers, onEnders=onEnders, simulationMode=self.simulationMode)
 
-        # self.simulator.run(maxTicks)
+        self.simulator.run(maxTicks)
 
         # # try:
         # # except Exception as e:
