@@ -58,7 +58,7 @@ class IDM():
             vehicle_location_at_front = self.local_map.vehicle_at_front.get_location()
             vehicle_location_at_front = carla.Vector3D(vehicle_location_at_front.x, vehicle_location_at_front.y, 0)
             distance = vehicle_location_at_front - vehicle_location
-            gap = distance.length()
+            gap = distance.length() - self.vehicle_length
             
 
         acceleration = math.pow((vehicle_velocity / self.desired_velocity), 4)
@@ -83,7 +83,7 @@ class IDM():
         del_v = (pv - lpv)
         ab = self.max_acceleration * self.comfort_deceleration
         c = ((self.safe_time_headway * pv) + ((pv * del_v) / (2 * math.sqrt(ab))))
-        ret = float(self.minimum_distance + max(0, c))
+        ret = float(self.minimum_distance + c) #max(0, c))
         return ret
 
 

@@ -27,7 +27,7 @@ class VehicleFactory(ClientUser):
         self.time_delta = time_delta
         
         self.bpLib = self.world.get_blueprint_library()
-        self.vehicleBps = self.bpLib.filter('vehicle.audi.*')
+        self.vehicleBps = self.bpLib.filter('vehicle.audi.a2')
 
         
     def getVehicles(self):

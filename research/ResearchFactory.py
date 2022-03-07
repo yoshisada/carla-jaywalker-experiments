@@ -53,7 +53,7 @@ class ResearchFactory:
                                      port=2000, 
                                      defaultLogLevel=logging.INFO, 
                                      output_dir="logs", 
-                                     map=MapNames.straight_road_with_parking, 
+                                     map=MapNames.t_junction, 
                                      simulationMode=SimulationMode.ASYNCHRONOUS,
                                      simulation_id='setting1'):
 

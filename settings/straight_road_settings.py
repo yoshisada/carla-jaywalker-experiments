@@ -16,16 +16,16 @@ from .trajctory_follower_settings import trajectory_follower_settings
 scenario_settings = {
     "setting1": {
         "cogmod_agent": {
-            "spawn_point": (-55, 8), # (12, 13), #(-55, 8),
-            "destination_point": (150, 8), # (-49, 12), #(150, 8),
+            "spawn_point": (30, 13), #(-55, 8),
+            "destination_point": (-60, 12), #(150, 8),
             "driver_profile": driver_profile["driver3"],
             # speed 30
         },
         'actor_agent': {
-            "spawn_point": (3, 8),# (-10, 13), #(3, 8),
-            "destination_point": (150, 8), # (-49, 12),# (150, 8),
-            "driver_profile": 'normal'
-            # speed 20
+            "spawn_point": (0, 13), #(3, 8),
+            "destination_point": (-60, 12),# (150, 8),
+            "driver_profile": 'normal',
+            "target_speed": 10,
         },
         'trigger_distance': 20
     }

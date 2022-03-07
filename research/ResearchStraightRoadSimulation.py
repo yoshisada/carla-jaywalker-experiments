@@ -1,7 +1,10 @@
 
+from pickle import FALSE
+import time
 import carla
 from lib.MapManager import MapNames
 from lib.Simulator import Simulator
+from agents.tools.misc import get_speed
 from research.SimulationMode import SimulationMode
 from research.BaseResearch import BaseResearch
 
@@ -54,11 +57,13 @@ class ResearchStraightRoadSimulation(BaseResearch):
         pass
 
     def destoryActors(self):
-        self.cogmod_agent.get_vehicle().destroy()
-        self.actor_agent.get_vehicle().destroy()
+        if self.cogmod_agent is not None:
+            self.cogmod_agent.get_vehicle().destroy()
+            self.cogmod_agent = None
+        if self.actor_agent is not None:
+            self.actor_agent.get_vehicle().destroy()
+            self.actor_agent = None
 
-        self.cogmod_agent = None
-        self.actor_agent = None
         pass
 
     def onEnd(self):
@@ -70,6 +75,8 @@ class ResearchStraightRoadSimulation(BaseResearch):
         pass
 
     def updateVehiclesAsynchoronousMode(self):
+        print(f'update vehicle, cogmod agent {self.cogmod_agent.is_done()}')
+        print(f'update vehicle, actor agent {self.actor_agent.done()}')
         if self.cogmod_agent is None or self.actor_agent is None:
             self.logger.error("cogmod agent or actor agent is None, ending simulation")
             exit()
@@ -77,13 +84,22 @@ class ResearchStraightRoadSimulation(BaseResearch):
         if self.cogmod_agent.is_done() or self.actor_agent.done():
             self.destoryActors()
             self.logger.info("destory actors")
+            exit()
         
         cogmod_control = self.cogmod_agent.update_agent(self.global_agent_list)
         if cogmod_control is not None:
             self.cogmod_agent.vehicle.apply_control(cogmod_control)
         # print(f'vehicle at front {self.cogmod_agent.local_map.vehicle_at_front}')
 
-        actor_control = self.actor_agent.run_step()
+        actor_location = self.actor_agent.get_vehicle().get_location()
+        cogmod_location = self.cogmod_agent.get_vehicle().get_location()
+        distance = actor_location.distance(cogmod_location)
+        actor_control = carla.VehicleControl()
+        if distance < self.trigger_distance:
+            actor_control = self.actor_agent.add_emergency_stop(actor_control)
+            # self.start_scenario = True
+        else:
+            actor_control = self.actor_agent.run_step()
         if actor_control is not None:
             self.actor_agent._vehicle.apply_control(actor_control)
 
@@ -100,8 +116,12 @@ class ResearchStraightRoadSimulation(BaseResearch):
             self.logger.warn("synchronous mode is not implemented yet")
             pass
         
-        # onTickers = [self.onTick, self.printStatOnTick]
-        onTickers = [self.onTick]
+        print(f'system time {time.time()}')
+        time.sleep(2.0)
+        print(f'after sleep time {time.time()}')
+
+        onTickers = [self.onTick, self.printStatOnTick]
+        # onTickers = [self.onTick]
         onEnders = [self.onEnd]
 
         self.simulator = Simulator(self.client, onTickers=onTickers, onEnders=onEnders, simulationMode=self.simulationMode)
@@ -112,11 +132,13 @@ class ResearchStraightRoadSimulation(BaseResearch):
         actor_location = self.actor_agent.get_vehicle().get_location()
         cogmod_location = self.cogmod_agent.get_vehicle().get_location()
 
-        actor_speed = self.actor_agent.get_vehicle().get_velocity()
-        cogmod_speed = self.cogmod_agent.get_vehicle().get_velocity()
+        # actor_speed = self.actor_agent.get_vehicle().get_velocity()
+        actor_speed = get_speed(self.actor_agent.get_vehicle())
+        cogmod_speed = get_speed(self.cogmod_agent.get_vehicle())
 
         distance = actor_location.distance(cogmod_location)
-        print(f'{world_snapshot} distance {round(distance, 2)}')
+        self.logger.info(f'{world_snapshot}, ego speed {round(cogmod_speed,2)}, actor speed {round(actor_speed,2)}, distance {round(distance, 2)}')
+        # print(f'ego target vel from motor server {self.cogmod_agent.motor_control.target_velocity}')
         pass
 
     def createCogmodAgentsAsynchronousMode(self):
@@ -140,6 +162,7 @@ class ResearchStraightRoadSimulation(BaseResearch):
         spawn_transform = self.actor_agent_setting["spawn_transform"]
         destination_transform = self.actor_agent_setting["destination_transform"]
         driver_profile = self.actor_agent_setting["driver_profile"]
+        target_speed = self.actor_agent_setting["target_speed"]
 
         vehicle = self.vehicleFactory.spawn(spawn_transform)
         if vehicle is None:
@@ -150,7 +173,7 @@ class ResearchStraightRoadSimulation(BaseResearch):
             self.logger.info(vehicle.get_control())
 
         self.actor_agent = self.vehicleFactory.createAgent(vehicle=vehicle,
-                                                           target_speed=15.0)
+                                                           target_speed=target_speed)
         self.actor_agent.set_destination(destination_transform.location)
 
         self.global_agent_list.append(self.actor_agent)

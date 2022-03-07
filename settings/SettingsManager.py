@@ -219,7 +219,8 @@ class SettingsManager(ClientUser):
         actor_agent_settings = {
             "spawn_transform": actor_spawn_transform,
             "destination_transform": actor_destination_transform,
-            "driver_profile": actor_agent_settings["driver_profile"]
+            "driver_profile": actor_agent_settings["driver_profile"],
+            "target_speed": actor_agent_settings["target_speed"]
         }
 
         trigger_distance = self.currentSetting["trigger_distance"]
