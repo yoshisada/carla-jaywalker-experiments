@@ -1,6 +1,9 @@
 
+from enum import Enum
 from pickle import FALSE
 import time
+from tkinter import END
+from tracemalloc import start
 import carla
 from lib.MapManager import MapNames
 from lib.Simulator import Simulator
@@ -14,6 +17,15 @@ from settings import SettingsManager
 from agents.vehicles import VehicleFactory
 
 # base research class for controlloing the whole simulation
+
+class ScenarioState(Enum):
+    START = 0
+    RUNNING = 1
+    END = 2
+    PENDING = 3
+    DISCARD = 4
+    pass
+
 
 class ResearchStraightRoadSimulation(BaseResearch):
     def __init__(self, client: carla.Client, 
@@ -46,6 +58,7 @@ class ResearchStraightRoadSimulation(BaseResearch):
 
         self.global_agent_list = []
         
+        self.scenario_state = ScenarioState.PENDING
         self.setup()
         pass
 
@@ -93,10 +106,14 @@ class ResearchStraightRoadSimulation(BaseResearch):
 
         actor_location = self.actor_agent.get_vehicle().get_location()
         cogmod_location = self.cogmod_agent.get_vehicle().get_location()
+
         distance = actor_location.distance(cogmod_location)
+
         actor_control = carla.VehicleControl()
+        
         if distance < self.trigger_distance:
             actor_control = self.actor_agent.add_emergency_stop(actor_control)
+            self.scenario_state = ScenarioState.RUNNING
             # self.start_scenario = True
         else:
             actor_control = self.actor_agent.run_step()
@@ -104,6 +121,8 @@ class ResearchStraightRoadSimulation(BaseResearch):
             self.actor_agent._vehicle.apply_control(actor_control)
 
         pass
+
+   
 
     def run(self, maxTicks=5000):
         self.logger.info(f'start simulation maxTicks {maxTicks}')
@@ -120,7 +139,7 @@ class ResearchStraightRoadSimulation(BaseResearch):
         time.sleep(2.0)
         print(f'after sleep time {time.time()}')
 
-        onTickers = [self.onTick, self.printStatOnTick]
+        onTickers = [self.onTick, self.printStatOnTick, self.checkScenarioState]
         # onTickers = [self.onTick]
         onEnders = [self.onEnd]
 
@@ -136,10 +155,57 @@ class ResearchStraightRoadSimulation(BaseResearch):
         actor_speed = get_speed(self.actor_agent.get_vehicle())
         cogmod_speed = get_speed(self.cogmod_agent.get_vehicle())
 
+        cogmod_control = self.cogmod_agent.get_vehicle().get_control()
+        actor_control = self.actor_agent.get_vehicle().get_control()
+
         distance = actor_location.distance(cogmod_location)
-        self.logger.info(f'{world_snapshot}, ego speed {round(cogmod_speed,2)}, actor speed {round(actor_speed,2)}, distance {round(distance, 2)}')
+        
+        self.logger.info(f'{world_snapshot}, {self.scenario_state}, ego speed {round(cogmod_speed,2)}, control {cogmod_control}, actor speed {round(actor_speed,2)}, control {actor_control}, distance {round(distance, 2)}')
+        
         # print(f'ego target vel from motor server {self.cogmod_agent.motor_control.target_velocity}')
         pass
+
+    def checkScenarioState(self, world_snapshot):
+
+        actor_speed_threshold = 9
+        cogmod_speed_threshold = 15
+        start_distance_threshold = 2
+
+        updated_distance_threshold = self.trigger_distance + start_distance_threshold
+
+        actor_location = self.actor_agent.get_vehicle().get_location()
+        cogmod_location = self.cogmod_agent.get_vehicle().get_location()
+
+        actor_speed = get_speed(self.actor_agent.get_vehicle())
+        cogmod_speed = get_speed(self.cogmod_agent.get_vehicle())
+
+
+        if self.scenario_state == ScenarioState.PENDING:
+            distance = actor_location.distance(cogmod_location)
+            if distance < updated_distance_threshold and actor_speed >= actor_speed_threshold and cogmod_speed >= cogmod_speed_threshold: 
+                self.scenario_state = ScenarioState.START
+                self.logger.info(f'start scenario')
+            elif distance < updated_distance_threshold and (actor_speed < actor_speed_threshold or cogmod_speed < cogmod_speed_threshold):
+                self.logger.info(f'discarding scenario')
+                self.scenario_state = ScenarioState.DISCARD
+                pass
+        elif self.scenario_state == ScenarioState.RUNNING:
+            rounded_actor_speed = int(actor_speed)
+            rounded_cogmod_speed = int(cogmod_speed)
+            
+            if rounded_actor_speed == 0 and rounded_cogmod_speed == 0:
+                self.scenario_state = ScenarioState.END
+                self.logger.info(f'end scenario')
+            pass
+
+        if self.scenario_state == ScenarioState.DISCARD or self.scenario_state == ScenarioState.END:
+            self.onEnd()
+            exit()
+            pass
+
+        pass
+
+
 
     def createCogmodAgentsAsynchronousMode(self):
         spawn_transform = self.cogmod_agent_setting["spawn_transform"]

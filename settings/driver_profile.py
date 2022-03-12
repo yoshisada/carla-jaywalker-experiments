@@ -90,7 +90,7 @@ driver_profile = {
             'lane_following': {
                 'desired_velocity': 5.56, # m/s
                 'safe_time_headway': 1.5, # s
-                'max_acceleration': 0.73, # m/s^2
+                'max_acceleration': 1.73, # m/s^2
                 'comfort_deceleration': 1.67, # m/s^2
                 'acceleration_exponent': 4, 
                 'minimum_distance': 4, # m

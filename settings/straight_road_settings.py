@@ -22,7 +22,7 @@ scenario_settings = {
             # speed 30
         },
         'actor_agent': {
-            "spawn_point": (0, 13), #(3, 8),
+            "spawn_point": (-10, 13), #(3, 8),
             "destination_point": (-60, 12),# (150, 8),
             "driver_profile": 'normal',
             "target_speed": 10,
