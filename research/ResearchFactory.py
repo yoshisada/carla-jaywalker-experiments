@@ -2,9 +2,9 @@ import logging
 import carla
 import os
 
-from lib import ClientUser, LoggerFactory, MapManager, MapNames, SimulationVisualization, Utils
+from lib import ClientUser, LoggerFactory, MapManager, MapNames, SimulationVisualization, Utils, SimulationMode
 from research import *
-from research.SimulationMode import SimulationMode
+# from research.SimulationMode import SimulationMode
 from research.ResearchCogMod import ResearchCogMod
 from research.ResearchStraightRoadSimulation import ResearchStraightRoadSimulation
 
@@ -17,7 +17,16 @@ class ResearchFactory:
         pass
 
     @staticmethod
-    def createResearch1v1(maxTicks=100, host="127.0.0.1", port=2000, defaultLogLevel=logging.INFO, output_dir="logs", map=MapNames.circle_t_junctions) -> Research1v1:
+    def createResearch1v1(
+                            maxTicks=100, 
+                            host="127.0.0.1", 
+                            port=2000, 
+                            defaultLogLevel=logging.INFO, 
+                            output_dir="logs", 
+                            map=MapNames.circle_t_junctions,
+                            simulationMode = SimulationMode.ASYNCHRONOUS,
+                            stats=True
+                            ) -> Research1v1:
 
         print(f"research chosen : R1v1 with host: {host}, port: {port}, log level: {defaultLogLevel}, output directory: {output_dir}")
         port = int(port)
@@ -25,8 +34,10 @@ class ResearchFactory:
         logPath = os.path.join(output_dir, f"{name}.log")
         logger = LoggerFactory.getBaseLogger(name, defaultLevel=defaultLogLevel, file=logPath)
         client = Utils.createClient(logger, host, port)
-        research = Research1v1(client, defaultLogLevel, output_dir)
-        research.run(maxTicks=maxTicks)
+        research = Research1v1(client, defaultLogLevel, output_dir, simulationMode=simulationMode, stats=stats)
+        # research.run(maxTicks=maxTicks)
+
+        return research
     
     @staticmethod
     def createResearchCogMod(maxTicks=100, 
