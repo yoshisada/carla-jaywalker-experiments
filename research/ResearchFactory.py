@@ -55,7 +55,8 @@ class ResearchFactory:
                                      output_dir="logs", 
                                      map=MapNames.t_junction, 
                                      simulationMode=SimulationMode.ASYNCHRONOUS,
-                                     simulation_id='setting1'):
+                                     simulation_id='setting1',
+                                     maxEpisode = 10):
 
         print(f"research chosen : StraightRoadSimulation with host: {host}, port: {port}, log level: {defaultLogLevel}, output directory: {output_dir}")
         port = int(port)
@@ -63,6 +64,6 @@ class ResearchFactory:
         logPath = os.path.join(output_dir, f"{name}.log")
         logger = LoggerFactory.getBaseLogger(name, defaultLevel=defaultLogLevel, file=logPath)
         client = Utils.createClient(logger, host, port)
-        research = ResearchStraightRoadSimulation(client, map, defaultLogLevel, output_dir, simulationMode, simulation_id)
+        research = ResearchStraightRoadSimulation(client, map, defaultLogLevel, output_dir, simulationMode, simulation_id, maxEpisode=maxEpisode)
         research.run(maxTicks=maxTicks)
     

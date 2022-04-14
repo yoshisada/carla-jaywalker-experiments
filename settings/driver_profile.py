@@ -2,12 +2,12 @@
 driver_profile = {
     'driver1': {
         'servers': {
-            'longterm_memory': {'queue_length': 10, 'tick_frequency': 1,},
-            'complex_cognition': {'queue_length': 10, 'tick_frequency': 1,},
+            'longterm_memory': {'queue_length': 10, 'tick_frequency': 3,},
+            'complex_cognition': {'queue_length': 10, 'tick_frequency': 3,},
             'motor_control': {'queue_length': 10, 'tick_frequency': 1,},
         },
         'local_map': {
-            'vehicle_tracking_radius': 20,
+            'vehicle_tracking_radius': 30,
             'global_plan_sampling_resolution': 1.0,
         },
         'controller': {
@@ -20,28 +20,28 @@ driver_profile = {
         },
         'subtasks_parameters': {
             'lane_following': {
-                'desired_velocity': 3.5 , # m/s
+                'desired_velocity': 5.56, # m/s
                 'safe_time_headway': 1.5, # s
-                'max_acceleration': 0.73, # m/s^2
+                'max_acceleration': 2.73, # m/s^2
                 'comfort_deceleration': 1.67, # m/s^2
                 'acceleration_exponent': 4, 
-                'minimum_distance': 2, # m
+                'minimum_distance': 4, # m
                 'vehicle_length': 1, # m
             },
             'lane_keeping': {
-                'far_distance': 15.0,
+                'far_distance': 30.0,
             },
         },
     },
 
     'driver2': {
         'servers': {
-            'longterm_memory': {'queue_length': 10, 'tick_frequency': 10,},
-            'complex_cognition': {'queue_length': 100, 'tick_frequency': 10,},
+            'longterm_memory': {'queue_length': 10, 'tick_frequency': 2,},
+            'complex_cognition': {'queue_length': 10, 'tick_frequency': 1,},
             'motor_control': {'queue_length': 10, 'tick_frequency': 1,},
         },
         'local_map': {
-            'vehicle_tracking_radius': 10,
+            'vehicle_tracking_radius': 30,
             'global_plan_sampling_resolution': 1.0,
         },
         'controller': {
@@ -54,16 +54,16 @@ driver_profile = {
         },
         'subtasks_parameters': {
             'lane_following': {
-                'desired_velocity': 4.5 , # m/s
+                'desired_velocity': 5.56, # m/s
                 'safe_time_headway': 1.5, # s
-                'max_acceleration': 0.73, # m/s^2
+                'max_acceleration': 2.73, # m/s^2
                 'comfort_deceleration': 1.67, # m/s^2
                 'acceleration_exponent': 4, 
-                'minimum_distance': 2, # m
+                'minimum_distance': 4, # m
                 'vehicle_length': 1, # m
             },
             'lane_keeping': {
-                'far_distance': 15.0,
+                'far_distance': 30.0,
             },
         },
     },
@@ -90,7 +90,7 @@ driver_profile = {
             'lane_following': {
                 'desired_velocity': 5.56, # m/s
                 'safe_time_headway': 1.5, # s
-                'max_acceleration': 1.73, # m/s^2
+                'max_acceleration': 2.73, # m/s^2
                 'comfort_deceleration': 1.67, # m/s^2
                 'acceleration_exponent': 4, 
                 'minimum_distance': 4, # m
@@ -103,36 +103,206 @@ driver_profile = {
     },
 
 
-    'fast_reckless_driver': {
+    'driver4': {
         'servers': {
-            'longterm_memory': {'queue_length': 10, 'tick_frequency': 1,},
-            'complex_cognition': {'queue_length': 10, 'tick_frequency': 1,},
+            'longterm_memory': {'queue_length': 10, 'tick_frequency': 2,},
+            'complex_cognition': {'queue_length': 10, 'tick_frequency': 2,},
             'motor_control': {'queue_length': 10, 'tick_frequency': 1,},
         },
         'local_map': {
-            'vehicle_tracking_radius': 60,
+            'vehicle_tracking_radius': 30,
             'global_plan_sampling_resolution': 1.0,
         },
         'controller': {
             'lateral_PID': {'K_P': 1.95, 'K_I': 0.05, 'K_D': 0.2, 'dt': 0.01,},
             'longitudinal_PID': {'K_P': 1.0, 'K_I': 0.05, 'K_D': 0.0, 'dt': 0.01,},
-            'max_throttle': 0.9,
-            'max_brake': 0.6,
+            'max_throttle': 0.75,
+            'max_brake': 0.3,
             'max_steering': 0.8,
             'offset': 0.0,
         },
         'subtasks_parameters': {
             'lane_following': {
-                'desired_velocity': 7.5, # m/s
-                'safe_time_headway': 0.5, # s
-                'max_acceleration': 0.83, # m/s^2
-                'comfort_deceleration': 1.97, # m/s^2
-                'acceleration_exponent': 2, 
-                'minimum_distance': 2, # m
+                'desired_velocity': 5.56, # m/s
+                'safe_time_headway': 1.5, # s
+                'max_acceleration': 2.73, # m/s^2
+                'comfort_deceleration': 1.67, # m/s^2
+                'acceleration_exponent': 4, 
+                'minimum_distance': 4, # m
                 'vehicle_length': 1, # m
             },
             'lane_keeping': {
-                'far_distance': 20.0,
+                'far_distance': 30.0,
+            },
+        },
+    },
+
+    'driver5': {
+        'servers': {
+            'longterm_memory': {'queue_length': 10, 'tick_frequency': 1,},
+            'complex_cognition': {'queue_length': 10, 'tick_frequency': 2,},
+            'motor_control': {'queue_length': 10, 'tick_frequency': 1,},
+        },
+        'local_map': {
+            'vehicle_tracking_radius': 30,
+            'global_plan_sampling_resolution': 1.0,
+        },
+        'controller': {
+            'lateral_PID': {'K_P': 1.95, 'K_I': 0.05, 'K_D': 0.2, 'dt': 0.01,},
+            'longitudinal_PID': {'K_P': 1.0, 'K_I': 0.05, 'K_D': 0.0, 'dt': 0.01,},
+            'max_throttle': 0.75,
+            'max_brake': 0.3,
+            'max_steering': 0.8,
+            'offset': 0.0,
+        },
+        'subtasks_parameters': {
+            'lane_following': {
+                'desired_velocity': 5.56, # m/s
+                'safe_time_headway': 1.5, # s
+                'max_acceleration': 2.73, # m/s^2
+                'comfort_deceleration': 1.67, # m/s^2
+                'acceleration_exponent': 4, 
+                'minimum_distance': 4, # m
+                'vehicle_length': 1, # m
+            },
+            'lane_keeping': {
+                'far_distance': 30.0,
+            },
+        },
+    },
+
+    'driver6': {
+        'servers': {
+            'longterm_memory': {'queue_length': 10, 'tick_frequency': 3,},
+            'complex_cognition': {'queue_length': 10, 'tick_frequency': 1,},
+            'motor_control': {'queue_length': 10, 'tick_frequency': 1,},
+        },
+        'local_map': {
+            'vehicle_tracking_radius': 30,
+            'global_plan_sampling_resolution': 1.0,
+        },
+        'controller': {
+            'lateral_PID': {'K_P': 1.95, 'K_I': 0.05, 'K_D': 0.2, 'dt': 0.01,},
+            'longitudinal_PID': {'K_P': 1.0, 'K_I': 0.05, 'K_D': 0.0, 'dt': 0.01,},
+            'max_throttle': 0.75,
+            'max_brake': 0.3,
+            'max_steering': 0.8,
+            'offset': 0.0,
+        },
+        'subtasks_parameters': {
+            'lane_following': {
+                'desired_velocity': 5.56, # m/s
+                'safe_time_headway': 1.5, # s
+                'max_acceleration': 2.73, # m/s^2
+                'comfort_deceleration': 1.67, # m/s^2
+                'acceleration_exponent': 4, 
+                'minimum_distance': 4, # m
+                'vehicle_length': 1, # m
+            },
+            'lane_keeping': {
+                'far_distance': 30.0,
+            },
+        },
+    },
+
+    'driver7': {
+        'servers': {
+            'longterm_memory': {'queue_length': 10, 'tick_frequency': 1,},
+            'complex_cognition': {'queue_length': 10, 'tick_frequency': 3,},
+            'motor_control': {'queue_length': 10, 'tick_frequency': 1,},
+        },
+        'local_map': {
+            'vehicle_tracking_radius': 30,
+            'global_plan_sampling_resolution': 1.0,
+        },
+        'controller': {
+            'lateral_PID': {'K_P': 1.95, 'K_I': 0.05, 'K_D': 0.2, 'dt': 0.01,},
+            'longitudinal_PID': {'K_P': 1.0, 'K_I': 0.05, 'K_D': 0.0, 'dt': 0.01,},
+            'max_throttle': 0.75,
+            'max_brake': 0.3,
+            'max_steering': 0.8,
+            'offset': 0.0,
+        },
+        'subtasks_parameters': {
+            'lane_following': {
+                'desired_velocity': 5.56, # m/s
+                'safe_time_headway': 1.5, # s
+                'max_acceleration': 2.73, # m/s^2
+                'comfort_deceleration': 1.67, # m/s^2
+                'acceleration_exponent': 4, 
+                'minimum_distance': 4, # m
+                'vehicle_length': 1, # m
+            },
+            'lane_keeping': {
+                'far_distance': 30.0,
+            },
+        },
+    },
+
+    'driver8': {
+        'servers': {
+            'longterm_memory': {'queue_length': 10, 'tick_frequency': 3,},
+            'complex_cognition': {'queue_length': 10, 'tick_frequency': 2,},
+            'motor_control': {'queue_length': 10, 'tick_frequency': 1,},
+        },
+        'local_map': {
+            'vehicle_tracking_radius': 30,
+            'global_plan_sampling_resolution': 1.0,
+        },
+        'controller': {
+            'lateral_PID': {'K_P': 1.95, 'K_I': 0.05, 'K_D': 0.2, 'dt': 0.01,},
+            'longitudinal_PID': {'K_P': 1.0, 'K_I': 0.05, 'K_D': 0.0, 'dt': 0.01,},
+            'max_throttle': 0.75,
+            'max_brake': 0.3,
+            'max_steering': 0.8,
+            'offset': 0.0,
+        },
+        'subtasks_parameters': {
+            'lane_following': {
+                'desired_velocity': 5.56, # m/s
+                'safe_time_headway': 1.5, # s
+                'max_acceleration': 2.73, # m/s^2
+                'comfort_deceleration': 1.67, # m/s^2
+                'acceleration_exponent': 4, 
+                'minimum_distance': 4, # m
+                'vehicle_length': 1, # m
+            },
+            'lane_keeping': {
+                'far_distance': 30.0,
+            },
+        },
+    },
+
+    'driver9': {
+        'servers': {
+            'longterm_memory': {'queue_length': 10, 'tick_frequency': 2,},
+            'complex_cognition': {'queue_length': 10, 'tick_frequency': 3,},
+            'motor_control': {'queue_length': 10, 'tick_frequency': 1,},
+        },
+        'local_map': {
+            'vehicle_tracking_radius': 30,
+            'global_plan_sampling_resolution': 1.0,
+        },
+        'controller': {
+            'lateral_PID': {'K_P': 1.95, 'K_I': 0.05, 'K_D': 0.2, 'dt': 0.01,},
+            'longitudinal_PID': {'K_P': 1.0, 'K_I': 0.05, 'K_D': 0.0, 'dt': 0.01,},
+            'max_throttle': 0.75,
+            'max_brake': 0.3,
+            'max_steering': 0.8,
+            'offset': 0.0,
+        },
+        'subtasks_parameters': {
+            'lane_following': {
+                'desired_velocity': 5.56, # m/s
+                'safe_time_headway': 1.5, # s
+                'max_acceleration': 2.73, # m/s^2
+                'comfort_deceleration': 1.67, # m/s^2
+                'acceleration_exponent': 4, 
+                'minimum_distance': 4, # m
+                'vehicle_length': 1, # m
+            },
+            'lane_keeping': {
+                'far_distance': 30.0,
             },
         },
     },

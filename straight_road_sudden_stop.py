@@ -5,14 +5,15 @@ from research import ResearchFactory, SimulationMode
 @click.option(
     '--max_ticks',
     metavar='number',
-    default=2000,
+    default=25000,
     type=int,
     help='Number of ticks the simulator will run'
     )
 def ResearchStraightRoadSuddenStop(max_ticks):
     research = ResearchFactory.createStraightRoadSimulation(maxTicks=max_ticks,
                                                             simulationMode=SimulationMode.ASYNCHRONOUS,
-                                                            simulation_id = 'setting1')
+                                                            simulation_id = 'setting1',
+                                                            maxEpisode = 100)
 
 
 if __name__ == '__main__':

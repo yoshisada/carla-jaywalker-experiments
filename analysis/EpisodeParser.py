@@ -10,7 +10,7 @@ class EpisodeParser:
         self.df = df
         self.episodeDf = {}
         # self.initComputation()
-        self.preComputeR1V1()
+        # self.preComputeR1V1()
         pass
 
 

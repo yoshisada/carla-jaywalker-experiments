@@ -136,7 +136,7 @@ class BasicAgent(Agent):
             start_location = self._vehicle.get_location()
             clean_queue = False
 
-        self.logger.debug(f"set_destination start_location {start_location} clean_queue {clean_queue}")
+        # self.logger.debug(f"set_destination start_location {start_location} clean_queue {clean_queue}")
 
         start_waypoint = self._map.get_waypoint(start_location)
         end_waypoint = self._map.get_waypoint(end_location)
@@ -176,9 +176,9 @@ class BasicAgent(Agent):
         """
         start_location = start_waypoint.transform.location
         end_location = end_waypoint.transform.location
-        self.logger.debug(f"Calling _global_planner trace_route")
+        # self.logger.debug(f"Calling _global_planner trace_route")
         route =  self._global_planner.trace_route(start_location, end_location)
-        self.logger.info(f"traced route from {start_location} to {end_location}")
+        # self.logger.info(f"traced route from {start_location} to {end_location}")
         return route
 
     def run_step(self):

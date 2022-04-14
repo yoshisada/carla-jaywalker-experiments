@@ -20,63 +20,63 @@ from lib.MapManager import MapNames
 from .SimulationMode import SimulationMode
 
 class Research1v1(BaseResearch):
-    
-    def __init__(self, client: carla.Client, 
-                 logLevel, 
-                 outputDir:str = "logs", 
-                 simulationMode = SimulationMode.ASYNCHRONOUS,
-                 simulation_id = "setting1"):
 
-        self.name = "Research1v1"
+    # def __init__(self, client: carla.Client,
+    #              logLevel,
+    #              outputDir:str = "logs",
+    #              simulationMode = SimulationMode.ASYNCHRONOUS,
+    #              simulation_id = "setting1"):
+    #
+    #     self.name = "Research1v1"
+    #
+    #     super().__init__(name=self.name,
+    #                      client=client,
+    #                      mapName=MapNames.circle_t_junctions,
+    #                      logLevel=logLevel,
+    #                      outputDir=outputDir,
+    #                      simulationMode=simulationMode)
+    #
+    #     self.settingsManager = SettingsManager(self.client, circular_t_junction_settings)
+    #     self.pedFactory = PedestrianFactory(self.client, visualizer=self.visualizer, time_delta=self.time_delta)
+    #     self.vehicleFactory = VehicleFactory(self.client, visualizer=self.visualizer)
+    #
+    #     self.episodeNumber = 0
+    #     self.episodeTimeStep = 0
+    #
+    #     self.setup()
 
-        super().__init__(name=self.name, 
-                         client=client, 
-                         mapName=MapNames.circle_t_junctions, 
-                         logLevel=logLevel, 
-                         outputDir=outputDir,
-                         simulationMode=simulationMode)
 
-        self.settingsManager = SettingsManager(self.client, circular_t_junction_settings)
-        self.pedFactory = PedestrianFactory(self.client, visualizer=self.visualizer, time_delta=self.time_delta)
-        self.vehicleFactory = VehicleFactory(self.client, visualizer=self.visualizer)
+    # def destoryActors(self):
+    #     self.logger.info('\ndestroying  walkers')
+    #     if self.walker is not None:
+    #         # self.walker.destroy()
+    #         self.pedFactory.destroy(self.walker)
+    #
+    #     self.logger.info('\ndestroying  vehicles')
+    #     if self.vehicle is not None:
+    #         self.vehicleFactory.destroy(self.vehicle)
 
-        self.episodeNumber = 0
-        self.episodeTimeStep = 0
+    # def setup(self):
+    #     self.settingsManager.load("setting3")
+    #
+    #     self.walker = None
+    #     self.walkerAgent = None
+    #     self.walkerSetting = self.getWalkerSetting()
+    #     self.walkerSpawnPoint = carla.Transform(location = self.walkerSetting.source)
+    #     self.walkerDestination = self.walkerSetting.destination
+    #
+    #     self.vehicle = None
+    #     self.vehicleAgent = None
+    #     self.vehicleSetting = self.getVehicleSetting()
+    #     self.vehicleSpawnPoint = self.settingsManager.locationToVehicleSpawnPoint(self.vehicleSetting.source)
+    #     self.vehicleDestination = self.vehicleSetting.destination
+    #
+    #     self.simulator = None # populated when run
+    #
+    #     self.statDataframe = pd.DataFrame()
+    #     self.initStatDict()
 
-        self.setup()
 
-
-    def destoryActors(self):
-        self.logger.info('\ndestroying  walkers')
-        if self.walker is not None:
-            # self.walker.destroy()
-            self.pedFactory.destroy(self.walker)
-
-        self.logger.info('\ndestroying  vehicles')
-        if self.vehicle is not None:
-            self.vehicleFactory.destroy(self.vehicle)
-
-    def setup(self):
-        self.settingsManager.load("setting3")
-
-        self.walker = None
-        self.walkerAgent = None
-        self.walkerSetting = self.getWalkerSetting()
-        self.walkerSpawnPoint = carla.Transform(location = self.walkerSetting.source)
-        self.walkerDestination = self.walkerSetting.destination
-
-        self.vehicle = None
-        self.vehicleAgent = None
-        self.vehicleSetting = self.getVehicleSetting()
-        self.vehicleSpawnPoint = self.settingsManager.locationToVehicleSpawnPoint(self.vehicleSetting.source)
-        self.vehicleDestination = self.vehicleSetting.destination
-
-        self.simulator = None # populated when run
-
-        self.statDataframe = pd.DataFrame()
-        self.initStatDict()
-
-    
     def getWalkerSetting(self):
         walkerSettings = self.settingsManager.getWalkerSettings()
         walkerSetting = walkerSettings[1]
@@ -89,7 +89,7 @@ class Research1v1(BaseResearch):
 
 
     def createWalker(self):
-        
+
         self.visualizer.drawWalkerNavigationPoints([self.walkerSpawnPoint])
 
 
@@ -101,9 +101,9 @@ class Research1v1(BaseResearch):
         else:
             self.logger.info(f"successfully spawn walker {self.walker.id} at {self.walkerSpawnPoint.location.x, self.walkerSpawnPoint.location.y, self.walkerSpawnPoint.location.z}")
             self.logger.info(self.walker.get_control())
-            
-            # visualizer.trackOnTick(walker.id, {"life_time": 1})      
-        
+
+            # visualizer.trackOnTick(walker.id, {"life_time": 1})
+
         self.world.wait_for_tick() # otherwise we can get wrong agent location!
 
         optionalFactors = [Factors.CROSSING_ON_COMING_VEHICLE, Factors.SURVIVAL_DESTINATION]
@@ -122,7 +122,7 @@ class Research1v1(BaseResearch):
 
         pass
 
-    
+
     def createVehicle(self, randomizeSpawnPoint=True):
         vehicleSpawnPoint = self.vehicleSpawnPoint
         # vehicleSpawnPoint = random.choice(self.mapManager.spawn_points)
@@ -137,7 +137,7 @@ class Research1v1(BaseResearch):
                 vehicleSpawnPoint = currentWp.previous(distance)[0].transform
             vehicleSpawnPoint.location += carla.Location(z=1)
 
-        self.vehicle = self.vehicleFactory.spawn(vehicleSpawnPoint)       
+        self.vehicle = self.vehicleFactory.spawn(vehicleSpawnPoint)
         if self.vehicle is None:
             self.logger.error("Cannot spawn vehicle")
             exit("Cannot spawn vehicle")
@@ -179,7 +179,7 @@ class Research1v1(BaseResearch):
     def run(self, maxTicks=1000):
 
         self.episodeNumber = 1 # updated when resetted
-        
+
 
         # self.visualizer.drawPoint(carla.Location(x=-96.144363, y=-3.690280, z=1), color=(0, 0, 255), size=0.1)
         # self.visualizer.drawPoint(carla.Location(x=-134.862671, y=-42.092407, z=0.999020), color=(0, 0, 255), size=0.1)
@@ -196,7 +196,7 @@ class Research1v1(BaseResearch):
 
         self.simulator.run(maxTicks)
 
-        # try: 
+        # try:
         # except Exception as e:
         #     self.logger.exception(e)
 
@@ -204,7 +204,7 @@ class Research1v1(BaseResearch):
     def restart(self, world_snapshot):
 
         killCurrentEpisode = False
-        
+
         if self.walkerAgent.isFinished():
             self.episodeNumber += 1
             self.episodeTimeStep = 0
@@ -214,7 +214,7 @@ class Research1v1(BaseResearch):
             self.episodeTimeStep = 0
             killCurrentEpisode = True
             self.logger.info("Killing current episode as it takes more than 200 ticks")
-        
+
         if killCurrentEpisode:
 
             # 1. recreated vehicle
@@ -226,7 +226,7 @@ class Research1v1(BaseResearch):
             # 3. update statDataframe
             self.updateStatDataframe()
 
-    
+
     def recreateVehicle(self):
         # destroy current one
         # self.simulator.removeOnTicker()
@@ -239,10 +239,10 @@ class Research1v1(BaseResearch):
     def resetWalker(self, sameOrigin=True):
 
         if sameOrigin == True:
-            
+
             self.walkerAgent.reset(newStartPoint=self.walkerSetting.source)
             self.walkerAgent.setDestination(self.walkerSetting.destination)
-            return 
+            return
 
         if self.walkerAgent.location.distance_2d(self.walkerSetting.source) < 1: # currently close to source
             self.walkerAgent.reset()
@@ -250,7 +250,7 @@ class Research1v1(BaseResearch):
         else:
             self.walkerAgent.reset()
             self.walkerAgent.setDestination(self.walkerSetting.source)
-    
+
     def onEnd(self):
         self.destoryActors()
         self.saveStats()
@@ -273,8 +273,8 @@ class Research1v1(BaseResearch):
         self.visualizer.drawWaypoints(waypoints, color=(0, 0, 0), z=1, life_time=0.1)
         self.logger.info(f"Linear distance to pedestrian {self.walkerAgent.actorManager.distanceFromNearestOncomingVehicle()}")
         self.logger.info(f"Arc distance to pedestrian {Utils.getDistanceCoveredByWaypoints(waypoints)}")
-    
-    
+
+
     def updateWalker(self, world_snapshot):
 
         # print("updateWalker")
@@ -298,12 +298,12 @@ class Research1v1(BaseResearch):
         control = self.walkerAgent.calculateControl()
         # print("apply_control")
         self.walker.apply_control(control)
-            
+
     def updateVehicle(self, world_snapshot):
 
         if self.vehicleAgent is None:
             self.logger.warn(f"No vehicle to update")
-            return 
+            return
 
         if self.vehicleAgent.done():
             destination = random.choice(self.mapManager.spawn_points).location
@@ -312,7 +312,7 @@ class Research1v1(BaseResearch):
             self.logger.info("The target has been reached, searching for another target")
             self.visualizer.drawDestinationPoint(destination)
 
-        
+
         control = self.vehicleAgent.run_step()
         control.manual_gear_shift = False
         self.logger.info(control)
@@ -339,28 +339,28 @@ class Research1v1(BaseResearch):
 
         # walkers = self.pedFactory.getWalkers()
         # vehicles  = self.vehicleFactory.getVehicles()
-        
+
         # for walker in walkers
 
         # self.trajectories = pd.DataFrame(columns=["episode", "v_loc", "v_speed", "v_direction", "w_loc", "w_speed", "w_direction"])
 
         self.statDict = {
-            "episode": [], 
+            "episode": [],
             "timestep": [],
-            "v_x": [], 
-            "v_y": [], 
-            "v_speed": [], 
-            # "v_direction": [], 
-            "w_x": [], 
-            "w_y": [], 
-            "w_speed": [], 
+            "v_x": [],
+            "v_y": [],
+            "v_speed": [],
+            # "v_direction": [],
+            "w_x": [],
+            "w_y": [],
+            "w_speed": [],
             "w_state": []
             # "w_direction": []
         }
 
 
         pass
-    
+
     def collectStats(self, world_snapshot):
 
         self.statDict["episode"].append(self.episodeNumber)

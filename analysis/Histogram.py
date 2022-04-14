@@ -28,6 +28,7 @@ class Histogram:
             g.set_axis_labels(xlabel, "Count")
 
         g.set_titles(f"Distribution of {xlabel}")
+        plt.axvline(x=data[col].mean(), color='red')
         plt.show()
 
     

@@ -131,7 +131,7 @@ class LocalMap():
             if distance < min_distance:
                 min_distance = distance
                 self.vehicle_at_front = agent.get_vehicle()
-                print('setting vehicle at front')
+                # print('setting vehicle at front')
                 pass
 
 
