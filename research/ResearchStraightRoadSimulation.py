@@ -11,7 +11,7 @@ import pandas as pd
 from lib.MapManager import MapNames
 from lib.Simulator import Simulator
 from agents.tools.misc import get_speed
-from research.SimulationMode import SimulationMode
+from lib.SimulationMode import SimulationMode
 from research.BaseResearch import BaseResearch
 
 from settings.straight_road_settings import scenario_settings

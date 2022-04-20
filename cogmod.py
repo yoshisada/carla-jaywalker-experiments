@@ -1,5 +1,6 @@
 import click
-from research import ResearchFactory, SimulationMode
+from research import ResearchFactory
+from lib.SimulationMode import SimulationMode
 
 @click.command()
 @click.option(        

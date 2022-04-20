@@ -8,7 +8,6 @@ from agents.navigation.basic_agent import BasicAgent  # pylint: disable=import-e
 from lib import LoggerFactory, ClientUser
 
 from agents.vehicles.qnactr.CogMod import CogModAgent  # cogmod agent 
-from .qnactr.TrajectoryFollower import TrajectoryFollower  # trajectory follower actor agent
 
 
 from lib import LoggerFactory

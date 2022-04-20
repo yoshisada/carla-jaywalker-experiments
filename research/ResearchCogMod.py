@@ -11,7 +11,6 @@ from settings import SettingsManager
 from agents.pedestrians import PedestrianFactory
 from agents.vehicles import VehicleFactory
 from lib import Simulator, SimulationMode
-from lib import Utils
 
 class ResearchCogMod(BaseResearch):
 
