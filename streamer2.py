@@ -130,7 +130,7 @@ def simulation(q, resetCameraQ, host, port):
 
     while True:
         try:
-            world = simulatorWait(world, camera, q, resetCameraQ)
+            world, camera = simulatorWait(world, camera, q, resetCameraQ)
         except KeyboardInterrupt:
             safeDeleteCamera(world)
             q.close()
@@ -179,7 +179,7 @@ def getSepectatorCamera(world):
     camera_bp = bp_library.find('sensor.camera.rgb')
     camera_bp.set_attribute('image_size_x', f'{imW}')
     camera_bp.set_attribute('image_size_y', f'{imH}')
-    camera_bp.set_attribute('sensor_tick', '0.5')
+    camera_bp.set_attribute('sensor_tick', '0.2')
 
     print(f"spawning camera")
 
@@ -239,9 +239,9 @@ def simulatorWait(world, camera, q, resetCameraQ):
     existingCamera = world.get_actors().find(camera.id)
     if existingCamera is None or existingCamera.type_id != camera.type_id:
         world, camera = initCamera(q, resetCameraQ)
-        return world
+        # return world
     
-    return world
+    return world, camera
 
 
     # result=resetCameraQ.get_nowait() 

@@ -8,6 +8,23 @@ class MapNames(Enum):
     circle_t_junctions = 'circle_t_junctions'
     t_junction = 't_junction'
     straight_road_with_parking = 'straight'
+    # Town01 = 'Town01'
+    # Town02 = 'Town02'
+    # Town03 = 'Town03'
+    # Town04 = 'Town04'
+    # Town05 = 'Town05'
+    # Town06 = 'Town06'
+    # Town07 = 'Town07'
+    # Town10 = 'Town10'
+    Town11 = 'Town11'
+    Town01_Opt = 'Town01_Opt'
+    Town02_Opt = 'Town02_Opt'
+    Town03_Opt = 'Town03_Opt'
+    Town04_Opt = 'Town04_Opt'
+    Town05_Opt = 'Town05_Opt'
+    Town06_Opt = 'Town06_Opt'
+    Town07_Opt = 'Town07_Opt'
+    Town10HD_Opt = 'Town10HD_Opt'
 
 
 class MapManager(ClientUser):
@@ -24,8 +41,13 @@ class MapManager(ClientUser):
     @property
     def waypoints(self):
         if self._waypoints is None:
-            raise Error("waypoint accessed before loading a map")
+            raise Exception("waypoint accessed before loading a map")
         return self._waypoints
+
+    def getMapName(self, map):
+        path = map.name
+        pathArr = path.split('/')
+        return pathArr[-1]
 
     def generateNavPoints(self, count=20):
         nav_points = []
@@ -37,8 +59,12 @@ class MapManager(ClientUser):
         return nav_points
 
     
-    def load(self, mapName: MapNames):
-        self.client.load_world(mapName.value)
+    def load(self, mapName: MapNames, layers=carla.MapLayer.NONE):
+        
+        currentMapName = self.getMapName(self.map)
+        if mapName.value != currentMapName:
+            print(f"loading new map {mapName.value}")
+            self.client.load_world(mapName.value, map_layers=layers)
 
         self.currentMapName = mapName
 
@@ -62,6 +88,9 @@ class MapManager(ClientUser):
         # else:
         #     transform = carla.Transform(carla.Location(x=x, y=y, z=z*3), carla.Rotation(pitch=-90)) 
 
+        if self.currentMapName == MapNames.Town02_Opt:
+            transform = carla.Transform(carla.Location(x=x, y=y, z=z * 0.4), carla.Rotation(pitch=-90)) 
+            
         
         spectator = self.world.get_spectator()
         spectator.set_transform(transform)

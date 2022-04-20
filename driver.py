@@ -26,7 +26,7 @@ argparser.add_argument(
     metavar='P',
     default=2000,
     type=int,
-    help='TCP port to listen to (default: 3000)')
+    help='TCP port to listen to (default: 2000)')
 argparser.add_argument(
     '--tm-port',
     metavar='P',
@@ -44,14 +44,20 @@ client.set_timeout(5.0)
 logging.info(f"Client carla version: {client.get_client_version()}")
 logging.info(f"Server carla version: {client.get_server_version()}")
 
+# print(client.get_available_maps())
+
 if client.get_client_version() != client.get_server_version():
     logging.warning("Client and server version mistmatch. May not work properly.")
 
 SpawnActor = carla.command.SpawnActor
 
+
 mapManager = MapManager(client)
 # mapManager.load(MapNames.t_junction)
-mapManager.load(MapNames.circle_t_junctions)
+# mapManager.load(MapNames.circle_t_junctions)
+
+# mapManager.load(MapNames.Town02_Opt, carla.MapLayer.NONE)
+mapManager.load(MapNames.Town02_Opt, carla.MapLayer.NONE)
 
 world = mapManager.world
 
@@ -67,9 +73,11 @@ visualizer = SimulationVisualization(client, mapManager)
 map = mapManager.map
 
 
-visualizer.drawSpawnPoints()
+visualizer.drawSpawnPoints(dropout=0.3)
 visualizer.drawSpectatorPoint()
 visualizer.drawAllWaypoints(life_time=0.0)
+
+# exit(0)
 
 
 bpLib = world.get_blueprint_library()
@@ -78,8 +86,11 @@ blueprint = random.choice(vehicleBps)
 
 
 spawn_points = mapManager.spawn_points
+# spawn_points = map.get_spawn_points()
 
 spawnPoint = random.choice(spawn_points)
+# spawnPoint = spawn_points[0]
+spawnPoint.location.z=1.0
 
 if blueprint.has_attribute('color'):
     color = random.choice(blueprint.get_attribute('color').recommended_values)
@@ -109,7 +120,8 @@ else:
 time.sleep(1)
 
 agent = BasicAgent(vehicle, target_speed=20, opt_dict={"debug": True})
-destination = random.choice(mapManager.spawn_points).location
+destination = random.choice(spawn_points).location
+# destination = spawn_points[4].location
 agent.set_destination(destination)
 visualizer.drawDestinationPoint(destination)
 
