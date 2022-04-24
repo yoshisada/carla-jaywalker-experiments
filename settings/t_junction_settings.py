@@ -29,13 +29,10 @@
 # (-49, 16) -> (-21, 44), (12, 16)
 
 from .driver_profile import driver_profile
-from .trajctory_follower_settings import trajectory_follower_settings
+
 
 t_junction_settings = {
-
-
 # settings with single vehicle 
-
     # A to straight to C
     "setting1": {
         "cogmod_agents": {
@@ -49,7 +46,7 @@ t_junction_settings = {
         "actor_agents": {
             "number_of_actor_agents": 1,
             "1": {
-                "trajectory": trajectory_follower_settings["trajectory1"],
+                
             }
         }
     },

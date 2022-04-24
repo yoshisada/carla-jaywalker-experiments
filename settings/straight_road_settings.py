@@ -1,5 +1,4 @@
 from .driver_profile import driver_profile
-from .trajctory_follower_settings import trajectory_follower_settings
 
 # In this scenario
 # the vehicle is driving in a straigt road with one other vehicle at the front

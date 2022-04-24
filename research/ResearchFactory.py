@@ -62,7 +62,7 @@ class ResearchFactory:
         logger = LoggerFactory.getBaseLogger(name, defaultLevel=defaultLogLevel, file=logPath)
         client = Utils.createClient(logger, host, port)
         research = ResearchCogMod(client, defaultLogLevel, map, output_dir, simulationMode, simulation_id)
-        research.run(maxTicks=maxTicks)
+        # research.run(maxTicks=maxTicks)
 
     @staticmethod
     def createStraightRoadSimulation(maxTicks=100, 
