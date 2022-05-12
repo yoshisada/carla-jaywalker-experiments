@@ -18,7 +18,7 @@ class ResearchFactory:
     @staticmethod
     def createResearch1v1(
                             maxTicks=100, 
-                            host="76.126.1.170", 
+                            host="127.0.0.1", 
                             port=2000, 
                             defaultLogLevel=logging.INFO, 
                             output_dir="logs", 
